@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Text, TextInput, SafeAreaView, StyleSheet} from 'react-native';
 import {Navigation} from 'react-native-navigation';
-import {AddButton} from '../buttons';
+import {AddButton} from '../widgets/buttons';
 
 const ActivitiesList = () => {
   const showAddNewRecord = () => {

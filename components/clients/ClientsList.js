@@ -1,9 +1,9 @@
 import React from 'react';
 import {View, Text, TextInput, SafeAreaView, StyleSheet} from 'react-native';
 import {Navigation} from 'react-native-navigation';
-import {AddButton} from '../buttons';
+import {AddButton} from '../widgets/buttons';
 
-import {ButtonPrimary} from '../buttons';
+import {ButtonPrimary} from '../widgets/buttons';
 const ClientsList = () => {
   const showAddNewClient = () => {
     Navigation.showModal({
@@ -15,7 +15,7 @@ const ClientsList = () => {
               options: {
                 topBar: {
                   title: {
-                    text: 'dynamic title',
+                    text: 'Add new client',
                   },
                 },
               },
