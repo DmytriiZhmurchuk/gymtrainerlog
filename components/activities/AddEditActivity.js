@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Text, TextInput, SafeAreaView, StyleSheet} from 'react-native';
 import {Navigation} from 'react-native-navigation';
-import {CancelButton, SaveButton} from '../buttons';
+import {CancelButton, SaveButton} from '../widgets/buttons';
 
 const AddEditActivity = props => {
   const handleCancel = () => {

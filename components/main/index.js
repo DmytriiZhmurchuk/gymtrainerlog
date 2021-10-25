@@ -2,7 +2,7 @@ import React, {FC} from 'react';
 import {Navigation} from 'react-native-navigation';
 
 import {View, Text, Button, StyleSheet, TouchableHighlight} from 'react-native';
-import {ButtonPrimary} from '../buttons';
+import {ButtonPrimary} from '../widgets/buttons';
 
 const HomeScreen = props => {
   const navigateToClientsList = () => {

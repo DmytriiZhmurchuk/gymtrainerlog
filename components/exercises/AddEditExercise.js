@@ -1,7 +1,8 @@
 import React from 'react';
 import {View, Text, TextInput, SafeAreaView, StyleSheet} from 'react-native';
 import {Navigation} from 'react-native-navigation';
-import {CancelButton, SaveButton} from '../buttons';
+import {CancelButton, SaveButton} from '../widgets/buttons';
+import Input from '../widgets/Input';
 
 const AddEditExercise = props => {
   const handleCancel = () => {
@@ -9,25 +10,30 @@ const AddEditExercise = props => {
   };
   const handleSave = () => {};
   return (
-    <SafeAreaView>
-      <View>
-        <View>
-          <TextInput placeholder="Exercise Name" />
+    <View style={styles.container}>
+      <View style={styles.exercise}>
+        <Text style={styles.inputLabel}>Exercise title:</Text>
+        <Input placeholder="Enter exercise name" />
+      </View>
+      <View style={styles.row}>
+        <View style={styles.btnCancel}>
+          <CancelButton onPress={handleCancel} />
         </View>
-        <View style={styles.row}>
-          <View style={styles.btnCancel}>
-            <CancelButton onPress={handleCancel} />
-          </View>
-          <View style={styles.btnSave}>
-            <SaveButton onPress={handleSave} />
-          </View>
+        <View style={styles.btnSave}>
+          <SaveButton onPress={handleSave} />
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    paddingTop: 40,
+    paddingBottom: 60,
+    paddingHorizontal: 10,
+    flex: 1,
+  },
   row: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -38,6 +44,12 @@ const styles = StyleSheet.create({
   },
   btnSave: {
     width: 150,
+  },
+  inputLabel: {
+    color: '#9e9e9e',
+  },
+  exercise: {
+    flexGrow: 1,
   },
 });
 
