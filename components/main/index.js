@@ -12,7 +12,7 @@ const HomeScreen = props => {
         options: {
           topBar: {
             title: {
-              text: 'Clients List',
+              text: 'Clients',
             },
           },
         },
@@ -27,7 +27,7 @@ const HomeScreen = props => {
         options: {
           topBar: {
             title: {
-              text: 'Activity Records List',
+              text: 'Activity Records',
             },
           },
         },
@@ -42,7 +42,7 @@ const HomeScreen = props => {
         options: {
           topBar: {
             title: {
-              text: 'Activity Records List',
+              text: 'Execcises',
             },
           },
         },

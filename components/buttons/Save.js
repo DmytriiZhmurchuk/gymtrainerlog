@@ -2,24 +2,29 @@ import React from 'react';
 import {Text} from 'react-native';
 
 import Icon from 'react-native-vector-icons/EvilIcons';
-const AddButton = ({title, onPress}) => {
+const SaveButton = ({title, onPress}) => {
   return (
     <Icon.Button
-      name="plus"
-      size={50}
-      backgroundColor="#2196F3"
+      name="check"
+      size={40}
+      backgroundColor="white"
+      style={{
+        borderColor: '#2196F3',
+        borderWidth: 1,
+      }}
+      iconStyle={{color: '#2196F3'}}
       onPress={onPress}>
       <Text
         style={{
           fontSize: 20,
-          color: 'white',
+          color: '#2196F3',
           fontWeight: '600',
           paddingRight: 20,
         }}>
-        {title}
+        {title || 'Save'}
       </Text>
     </Icon.Button>
   );
 };
 
-export default AddButton;
+export default SaveButton;

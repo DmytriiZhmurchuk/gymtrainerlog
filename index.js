@@ -1,7 +1,7 @@
 import {Navigation} from 'react-native-navigation';
 import App from './App';
-import {ClientsList} from './components/clients';
-import {ExercisesList} from './components/exercises';
+import {ClientsList, AddEditClient} from './components/clients';
+import {ExercisesList, AddEditExercise} from './components/exercises';
 import {ActivitiesList, AddEditActivity} from './components/activities';
 
 App.options = {
@@ -49,6 +49,16 @@ Navigation.registerComponent(
 Navigation.registerComponent(
   'com.gymtrainerlog.activities.AddEditActivity',
   () => AddEditActivity,
+);
+
+Navigation.registerComponent(
+  'com.gymtrainerlog.clients.AddEditClient',
+  () => AddEditClient,
+);
+
+Navigation.registerComponent(
+  'com.gymtrainerlog.exercises.AddEditExercise',
+  () => AddEditExercise,
 );
 
 Navigation.events().registerAppLaunchedListener(() => {
