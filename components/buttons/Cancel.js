@@ -5,8 +5,8 @@ import Icon from 'react-native-vector-icons/EvilIcons';
 const CancelButton = ({title, onPress}) => {
   return (
     <Icon.Button
-      name="close"
-      size={20}
+      name="close-o"
+      size={40}
       backgroundColor="white"
       style={{
         borderColor: '#d32f2f',
@@ -21,7 +21,7 @@ const CancelButton = ({title, onPress}) => {
           fontWeight: '600',
           paddingRight: 20,
         }}>
-        {title || 'Dissmiss'}
+        {title || 'Cancel'}
       </Text>
     </Icon.Button>
   );

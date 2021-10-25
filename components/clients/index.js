@@ -1,2 +1,3 @@
 import ClientsList from './ClientsList';
-export {ClientsList};
+import AddEditClient from './AddEditClient';
+export {ClientsList, AddEditClient};

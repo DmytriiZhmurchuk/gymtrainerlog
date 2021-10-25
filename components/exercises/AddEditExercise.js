@@ -3,7 +3,7 @@ import {View, Text, TextInput, SafeAreaView, StyleSheet} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {CancelButton, SaveButton} from '../buttons';
 
-const AddEditActivity = props => {
+const AddEditExercise = props => {
   const handleCancel = () => {
     Navigation.dismissModal(props.componentId);
   };
@@ -11,14 +11,16 @@ const AddEditActivity = props => {
   return (
     <SafeAreaView>
       <View>
-        <Text>Add new Activity screen</Text>
-      </View>
-      <View style={styles.row}>
-        <View style={styles.btnCancel}>
-          <CancelButton onPress={handleCancel} />
+        <View>
+          <TextInput placeholder="Exercise Name" />
         </View>
-        <View style={styles.btnSave}>
-          <SaveButton onPress={handleSave} />
+        <View style={styles.row}>
+          <View style={styles.btnCancel}>
+            <CancelButton onPress={handleCancel} />
+          </View>
+          <View style={styles.btnSave}>
+            <SaveButton onPress={handleSave} />
+          </View>
         </View>
       </View>
     </SafeAreaView>
@@ -39,4 +41,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddEditActivity;
+export default AddEditExercise;

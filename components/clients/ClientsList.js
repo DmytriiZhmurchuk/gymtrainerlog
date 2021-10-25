@@ -5,11 +5,31 @@ import {AddButton} from '../buttons';
 
 import {ButtonPrimary} from '../buttons';
 const ClientsList = () => {
+  const showAddNewClient = () => {
+    Navigation.showModal({
+      stack: {
+        children: [
+          {
+            component: {
+              name: 'com.gymtrainerlog.clients.AddEditClient',
+              options: {
+                topBar: {
+                  title: {
+                    text: 'dynamic title',
+                  },
+                },
+              },
+            },
+          },
+        ],
+      },
+    });
+  };
   return (
     <SafeAreaView>
       <View style={styles.container}>
         <View style={styles.row}>
-          <AddButton title={'Add New Client'} />
+          <AddButton title={'Add New Client'} onPress={showAddNewClient} />
         </View>
         <View>
           <TextInput placeholder="Search" />
