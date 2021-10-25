@@ -1,8 +1,17 @@
+import React from 'react';
+import {Keyboard} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import App from './App';
 import {ClientsList, AddEditClient} from './components/clients';
 import {ExercisesList, AddEditExercise} from './components/exercises';
 import {ActivitiesList, AddEditActivity} from './components/activities';
+
+const patchKeyboardListener = () => {
+  if (!Keyboard.removeListener && 'removeEventListener' in Keyboard) {
+    Keyboard.removeListener = Keyboard.removeEventListener;
+  }
+};
+patchKeyboardListener();
 
 App.options = {
   topBar: {
@@ -29,7 +38,7 @@ Navigation.setDefaultOptions({
   },
 });
 
-Navigation.registerComponent('com.gymtrainerlog.HomeScreen', () => App);
+Navigation.registerComponent('com.gymtrainerlog.HomeScreen', props => App);
 
 Navigation.registerComponent(
   'com.gymtrainerlog.ClientsList',
