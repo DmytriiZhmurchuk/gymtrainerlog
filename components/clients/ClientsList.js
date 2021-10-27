@@ -4,6 +4,7 @@ import {Navigation} from 'react-native-navigation';
 import {AddButton} from '../widgets/buttons';
 import {getAllClients, openDBConnection} from '../db';
 import {showToast} from '../utils';
+import {RootSiblingParent} from 'react-native-root-siblings';
 
 const ClientsList = () => {
   const [clients, setClients] = useState([]);
@@ -53,21 +54,23 @@ const ClientsList = () => {
   }, []);
 
   return (
-    <SafeAreaView>
-      <View style={styles.container}>
-        <View style={styles.row}>
-          <AddButton title={'Add New Client'} onPress={showAddNewClient} />
+    <RootSiblingParent>
+      <SafeAreaView>
+        <View style={styles.container}>
+          <View style={styles.row}>
+            <AddButton title={'Add New Client'} onPress={showAddNewClient} />
+          </View>
+          <View>
+            <TextInput placeholder="Search" />
+          </View>
+          <View>
+            {clients.map(client => {
+              return <Text>{`${client.firstName}-${client.lastName}`}</Text>;
+            })}
+          </View>
         </View>
-        <View>
-          <TextInput placeholder="Search" />
-        </View>
-        <View>
-          {clients.map(client => {
-            return <Text>{`${client.firstName}-${client.lastName}`}</Text>;
-          })}
-        </View>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </RootSiblingParent>
   );
 };
 

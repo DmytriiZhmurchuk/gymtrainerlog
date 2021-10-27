@@ -8,7 +8,7 @@ import {RootSiblingParent} from 'react-native-root-siblings';
 import {showToast} from '../utils';
 import {openDBConnection, createClient, getClientByFirstLastName} from '../db';
 
-const AddEditClient = props => {
+const AddClient = props => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [extraNotes, setExtraNotes] = useState('');
@@ -140,4 +140,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddEditClient;
+export default AddClient;
