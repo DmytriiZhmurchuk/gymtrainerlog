@@ -1,4 +1,5 @@
 import Toast from 'react-native-root-toast';
+import {Keyboard} from 'react-native';
 
 export const showToast = text => {
   return Toast.show(text, {
@@ -9,4 +10,9 @@ export const showToast = text => {
     hideOnPress: true,
     delay: 0,
   });
+};
+export const patchKeyboardListener = () => {
+  if (!Keyboard.removeListener && 'removeEventListener' in Keyboard) {
+    Keyboard.removeListener = Keyboard.removeEventListener;
+  }
 };

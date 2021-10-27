@@ -1,44 +1,66 @@
-import React, {useState} from 'react';
+import React, {useState, useRef} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {CancelButton, SaveButton} from '../widgets/buttons';
 import Input from '../widgets/Input';
 import TextArea from '../widgets/TextArea';
 import {RootSiblingParent} from 'react-native-root-siblings';
-
 import {showToast} from '../utils';
+import {openDBConnection, createClient, getClientByFirstLastName} from '../db';
 
 const AddEditClient = props => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [extraNotes, setExtraNotes] = useState('');
+  const dbRef = useRef();
 
   const handleCancel = () => {
     Navigation.dismissModal(props.componentId);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!firstName.length) {
       showToast('Client name  cannot be empty');
       return;
     }
+
     if (!lastName.length) {
       showToast('Client last name  cannot be empty');
       return;
     }
-    showToast('Saved Successfully');
+
+    try {
+      if (!dbRef.current) {
+        dbRef.current = await openDBConnection();
+      }
+      const result = await getClientByFirstLastName(
+        {firstName, lastName},
+        dbRef.current,
+      );
+      if (result[0]?.rows?.raw()?.length) {
+        showToast(`Client ${firstName} ${lastName} is already exists`);
+        return;
+      }
+
+      await createClient({firstName, lastName, extraNotes}, dbRef.current);
+      showToast('Saved successfully');
+      props.onModalDismiss();
+      handleCancel();
+    } catch (err) {
+      showToast('Failed to save new client');
+    }
   };
 
   const onFirstNameChange = value => {
-    setFirstName(value);
+    setFirstName(value.trim());
   };
 
   const onLastNameChange = value => {
-    setLastName(value);
+    setLastName(value.trim());
   };
 
   const onExtraNotesChange = value => {
-    setExtraNotes(value);
+    setExtraNotes(value.trim());
   };
 
   return (

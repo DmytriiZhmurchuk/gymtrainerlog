@@ -1,4 +1,4 @@
-import React, {FC} from 'react';
+import React from 'react';
 import {Navigation} from 'react-native-navigation';
 
 import {View, StyleSheet} from 'react-native';
