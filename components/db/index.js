@@ -44,14 +44,15 @@ export const createClient = async (client, db) => {
 //   });
 // };
 
-export const getAllClients = async db => {
-  const query = 'SELECT * FROM Clients';
-  return db.executeSql(query);
+export const getAllClients = async (db, pageSize = 15, startIndex = 0) => {
+  const query = 'SELECT * FROM Clients ORDER BY firstName LIMIT ? OFFSET ?';
+  return db.executeSql(query, [pageSize, startIndex]);
 };
 
 export const getClientByFirstLastName = async (client, db) => {
-  const query = `SELECT * FROM Clients WHERE firstName='${client.firstName}' AND lastName='${client.lastName}'`;
-  return db.executeSql(query);
+  const query = 'SELECT * FROM Clients WHERE firstName=? AND lastName=?';
+  return db.executeSql(query, [client.firstName, client.lastName]);
+
 };
 
 // export const createExercise = async (exercise, db) => {
