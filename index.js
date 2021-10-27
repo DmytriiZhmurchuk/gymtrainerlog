@@ -1,8 +1,20 @@
+import React from 'react';
 import {Navigation} from 'react-native-navigation';
 import App from './App';
-import {ClientsList, AddEditClient} from './components/clients';
+import {ClientsList, AddClient} from './components/clients';
 import {ExercisesList, AddEditExercise} from './components/exercises';
 import {ActivitiesList, AddEditActivity} from './components/activities';
+import {patchKeyboardListener} from './components/utils';
+import {enablePromise} from 'react-native-sqlite-storage';
+
+import {
+  closeDbConnection,
+  createTables,
+  openDBConnection,
+} from './components/db';
+
+enablePromise(true);
+patchKeyboardListener();
 
 App.options = {
   topBar: {
@@ -29,7 +41,7 @@ Navigation.setDefaultOptions({
   },
 });
 
-Navigation.registerComponent('com.gymtrainerlog.HomeScreen', () => App);
+Navigation.registerComponent('com.gymtrainerlog.HomeScreen', props => App);
 
 Navigation.registerComponent(
   'com.gymtrainerlog.ClientsList',
@@ -52,8 +64,8 @@ Navigation.registerComponent(
 );
 
 Navigation.registerComponent(
-  'com.gymtrainerlog.clients.AddEditClient',
-  () => AddEditClient,
+  'com.gymtrainerlog.clients.AddClient',
+  () => AddClient,
 );
 
 Navigation.registerComponent(
@@ -61,7 +73,14 @@ Navigation.registerComponent(
   () => AddEditExercise,
 );
 
-Navigation.events().registerAppLaunchedListener(() => {
+Navigation.events().registerAppLaunchedListener(async () => {
+  try {
+    const db = await openDBConnection();
+    await createTables(db);
+    await closeDbConnection(db);
+  } catch (error) {
+    console.log(error);
+  }
   Navigation.setRoot({
     root: {
       stack: {
