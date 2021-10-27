@@ -27,9 +27,6 @@ const ClientsList = () => {
     setSearch(value);
   };
 
-const ClientsList = () => {
-  const [clients, setClients] = useState([]);
-
   const fetchClients = async () => {
     try {
       const db = await openDBConnection();
