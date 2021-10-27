@@ -52,6 +52,7 @@ export const getAllClients = async (db, pageSize = 15, startIndex = 0) => {
 export const getClientByFirstLastName = async (client, db) => {
   const query = 'SELECT * FROM Clients WHERE firstName=? AND lastName=?';
   return db.executeSql(query, [client.firstName, client.lastName]);
+
 };
 
 // export const createExercise = async (exercise, db) => {

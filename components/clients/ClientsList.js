@@ -27,6 +27,9 @@ const ClientsList = () => {
     setSearch(value);
   };
 
+const ClientsList = () => {
+  const [clients, setClients] = useState([]);
+
   const fetchClients = async () => {
     try {
       const db = await openDBConnection();
@@ -38,7 +41,6 @@ const ClientsList = () => {
       if (!results[0].rows.length) {
         return;
       }
-
       var temp = [];
       for (let i = 0; i < results[0].rows.length; ++i) {
         temp.push(results[0].rows.item(i));
