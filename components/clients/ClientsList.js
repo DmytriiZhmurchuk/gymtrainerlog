@@ -53,8 +53,38 @@ const ClientsList = props => {
     }
   };
 
+  const resetClientList = async () => {
+    try {
+      setListState({
+        limit: 10,
+        startIndex: 0,
+        data: [],
+      });
+      const db = await openDBConnection();
+      const results = await getAllClients(
+        db,
+        listState.limit,
+        listState.startIndex,
+      );
+      if (!results[0].rows.length) {
+        return;
+      }
+      var temp = [];
+      for (let i = 0; i < results[0].rows.length; ++i) {
+        temp.push(results[0].rows.item(i));
+      }
+      setListState({
+        ...listState,
+        startIndex: listState.startIndex + listState.limit,
+        data: listState.data.concat(temp),
+      });
+    } catch (error) {
+      showToast('DB error');
+    }
+  };
+
   const onModalDismiss = () => {
-    fetchClients();
+    resetClientList();
   };
 
   const showAddNewClient = () => {
@@ -143,7 +173,7 @@ const ClientsList = props => {
     const navigationEventListener = Navigation.events().bindComponent({
       props: {componentId: props.componentId},
       componentWillAppear() {
-        fetchClients();
+        resetClientList();
       },
     });
 
