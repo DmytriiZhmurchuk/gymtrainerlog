@@ -33,16 +33,16 @@ export const createClient = async (client, db) => {
   db.executeSql(query, [client.firstName, client.lastName, client.extraNotes]);
 };
 
-// export const updateClientById = async (client, db) => {
-//   const query = `UPDATE Clients SET firstName=?,lastName=?,extraNotes=1) WHERE id=${client.id}`;
-//   return db.transaction(async tx => {
-//     await tx.executeSql(query, [
-//       client.firstName,
-//       client.lastName,
-//       client.extraNotes,
-//     ]);
-//   });
-// };
+export const updateClientById = async (client, db) => {
+  const query =
+    'UPDATE Clients SET firstName=?,lastName=?,extraNotes=? WHERE id=?';
+  return db.executeSql(query, [
+    client.firstName,
+    client.lastName,
+    client.extraNotes,
+    client.id,
+  ]);
+};
 
 export const getAllClients = async (db, pageSize = 15, startIndex = 0) => {
   const query = 'SELECT * FROM Clients ORDER BY firstName LIMIT ? OFFSET ?';
@@ -52,7 +52,11 @@ export const getAllClients = async (db, pageSize = 15, startIndex = 0) => {
 export const getClientByFirstLastName = async (client, db) => {
   const query = 'SELECT * FROM Clients WHERE firstName=? AND lastName=?';
   return db.executeSql(query, [client.firstName, client.lastName]);
+};
 
+export const getClientById = async (id, db) => {
+  const query = 'SELECT * FROM Clients WHERE id=?';
+  return db.executeSql(query, [id]);
 };
 
 // export const createExercise = async (exercise, db) => {
