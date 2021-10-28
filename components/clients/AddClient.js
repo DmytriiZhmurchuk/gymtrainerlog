@@ -87,7 +87,7 @@ const AddClient = props => {
               placeholder="Enter additional notes"
               multiline={true}
               numberOfLines={10}
-              oonChangeText={onExtraNotesChange}
+              onChangeText={onExtraNotesChange}
             />
           </View>
         </View>

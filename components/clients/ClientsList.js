@@ -15,7 +15,7 @@ import {RootSiblingParent} from 'react-native-root-siblings';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {ListItem, Avatar, SearchBar} from 'react-native-elements';
 
-const ClientsList = () => {
+const ClientsList = props => {
   const [listState, setListState] = useState({
     data: [],
     limit: 10,
@@ -79,13 +79,30 @@ const ClientsList = () => {
     });
   };
 
-  const openClient = () => {
-    alert('open');
+  const openClient = id => {
+    Navigation.push(props.componentId, {
+      component: {
+        name: 'com.gymtrainerlog.clients.EditClient',
+        passProps: {clientId: id},
+        options: {
+          topBar: {
+            title: {
+              text: 'Edit client',
+            },
+          },
+        },
+      },
+    });
   };
 
   const renderItem = ({item}) => {
     return (
-      <ListItem key={item.id} bottomDivider onPress={openClient}>
+      <ListItem
+        key={item.id}
+        bottomDivider
+        onPress={() => {
+          openClient(item.id);
+        }}>
         <Avatar
           rounded
           size="medium"
@@ -123,8 +140,17 @@ const ClientsList = () => {
   };
 
   useEffect(() => {
-    fetchClients();
-  }, []);
+    const navigationEventListener = Navigation.events().bindComponent({
+      props: {componentId: props.componentId},
+      componentWillAppear() {
+        fetchClients();
+      },
+    });
+
+    return () => {
+      navigationEventListener.remove();
+    };
+  }, [props.componentId]);
 
   return (
     <SafeAreaProvider>
