@@ -1,19 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  SafeAreaView,
-  StyleSheet,
-  FlatList,
-} from 'react-native';
+import {View, Text, StyleSheet, FlatList} from 'react-native';
 import {Navigation} from 'react-native-navigation';
-import {AddButton} from '../widgets/buttons';
 import {getAllClients, openDBConnection} from '../db';
 import {showToast} from '../utils';
 import {RootSiblingParent} from 'react-native-root-siblings';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {ListItem, Avatar, SearchBar} from 'react-native-elements';
+import {ListItem, Avatar, SearchBar, Button} from 'react-native-elements';
+import EvilIcon from 'react-native-vector-icons/EvilIcons';
 
 const ClientsList = props => {
   const [listState, setListState] = useState({
@@ -73,6 +66,7 @@ const ClientsList = props => {
       for (let i = 0; i < results[0].rows.length; ++i) {
         temp.push(results[0].rows.item(i));
       }
+
       setListState({
         ...listState,
         startIndex: listState.startIndex + listState.limit,
@@ -125,19 +119,37 @@ const ClientsList = props => {
     });
   };
 
+  const openLogs = id => {
+    Navigation.push(props.componentId, {
+      component: {
+        name: 'com.gymtrainerlog.ActivitiesList',
+        passProps: {clientId: id},
+        options: {
+          topBar: {
+            title: {
+              text: 'Client activity',
+            },
+          },
+        },
+      },
+    });
+  };
+
   const renderItem = ({item}) => {
     return (
       <ListItem
         key={item.id}
         bottomDivider
         onPress={() => {
-          openClient(item.id);
+          openLogs(item.id);
         }}>
         <Avatar
           rounded
           size="medium"
           icon={{name: 'user', type: 'font-awesome'}}
-          onPress={() => console.log('Works!')}
+          onPress={() => {
+            openClient(item.id);
+          }}
           activeOpacity={0.7}
           overlayContainerStyle={{backgroundColor: '#eeeeee'}}
         />
@@ -205,7 +217,12 @@ const ClientsList = props => {
             />
             <View
               style={{paddingHorizontal: 10, marginBottom: 50, marginTop: 10}}>
-              <AddButton title={'Add new client'} onPress={showAddNewClient} />
+              <Button
+                title="Add new client"
+                icon={<EvilIcon name="plus" size={30} color="white" />}
+                buttonStyle={{height: 50}}
+                onPress={showAddNewClient}
+              />
             </View>
           </View>
         </View>

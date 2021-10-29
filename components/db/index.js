@@ -9,6 +9,7 @@ export const closeDbConnection = async db => {
 };
 
 export const createTables = async db => {
+  const enableForeignKeys = 'PRAGMA foreign_keys = ON;';
   const query = `CREATE TABLE IF NOT EXISTS Clients(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         firstName TEXT NOT NULL,
@@ -16,14 +17,31 @@ export const createTables = async db => {
         extraNotes TEXT
     );`;
 
-  const queryExercise = `CREATE TABLE IF NOT EXISTS Exercises(
+  const queryLogs = `CREATE TABLE IF NOT EXISTS Logs(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL
+        title TEXT NOT NULL,
+        clientId INTEGER NOT NULL,
+        date DATETIME DEFAULT (datetime(CURRENT_TIMESTAMP, 'localtime')),
+        FOREIGN KEY (clientId) REFERENCES Clients(clientId) ON DELETE CASCADE
     );`;
 
+  const queryActivities = `CREATE TABLE IF NOT EXISTS LogActivities(
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title VARCHAR NOT NULL,
+      count INTEGER,
+      weight VARCHAR,
+      time VARCHAR,
+      logId INTEGER NOT NULL,
+      date DATETIME DEFAULT (datetime(CURRENT_TIMESTAMP, 'localtime')),
+      FOREIGN KEY (logId) REFERENCES Logs(logId) ON DELETE CASCADE
+  );`;
+
   db.transaction(async tx => {
+    // tx.executeSql('DROP TABLE Logs');
+    tx.executeSql(enableForeignKeys);
+    tx.executeSql(queryActivities);
     tx.executeSql(query);
-    tx.executeSql(queryExercise);
+    tx.executeSql(queryLogs);
   });
 };
 
@@ -59,16 +77,48 @@ export const getClientById = async (id, db) => {
   return db.executeSql(query, [id]);
 };
 
-// export const createExercise = async (exercise, db) => {
-//   const query = 'INSERT INTO Exercises(title) VALUES(?)';
-//   return db.transaction(async tx => {
-//     await tx.executeSql(query, [exercise.title]);
-//   });
-// };
+export const getLogsByClientId = async (clientId, pageSize, startIndex, db) => {
+  const query =
+    'SELECT * FROM Logs WHERE clientId=? ORDER BY date LIMIT ? OFFSET ?';
+  return db.executeSql(query, [1, pageSize, startIndex]);
+};
 
-// export const getAllExecrcises = async db => {
-//   const query = 'SELECT * FROM Exercises';
-//   return db.transaction(async tx => {
-//     await tx.executeSql(query);
-//   });
-// };
+export const getLogRecordsByLogId = async (
+  logId,
+  pageSize = 15,
+  startIndex = 0,
+  db,
+) => {
+  const query =
+    'SELECT * FROM LogActivities WHERE logId=? ORDER BY date LIMIT ? OFFSET ?';
+  return db.executeSql(query, [logId, pageSize, startIndex]);
+};
+
+export const createLog = async (log, db) => {
+  const query = 'INSERT INTO Logs(title,clientId) VALUES(?,?);';
+  db.executeSql(query, [log.title, log.clientId]);
+};
+
+export const createLogRecord = async (logRecord, db) => {
+  const query =
+    'INSERT INTO LogActivities(logId,title,weight,count,time) VALUES(?,?,?,?,?);';
+  db.executeSql(query, [
+    logRecord.logId,
+    logRecord.title,
+    logRecord.weight,
+    logRecord.count,
+    logRecord.time,
+  ]);
+};
+
+export const updateLogRecord = async (logRecord, db) => {
+  const query =
+    'UPDATE LogActivities SET title=?,weight=?,count=?,time=? WHERE id=?';
+  db.executeSql(query, [
+    logRecord.title,
+    logRecord.weight,
+    logRecord.count,
+    logRecord.time,
+    logRecord.id,
+  ]);
+};
