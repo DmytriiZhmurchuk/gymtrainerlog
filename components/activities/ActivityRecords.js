@@ -8,7 +8,7 @@ import {ListItem, Button} from 'react-native-elements';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import IconMaterial from 'react-native-vector-icons/MaterialIcons';
 
-import {openDBConnection, getLogRecordsByLogId, getLogRecordById} from '../db';
+import {openDBConnection, getLogRecordsByLogId} from '../db';
 
 const ActivityRecords = props => {
   const [listState, setListState] = useState({
@@ -17,18 +17,30 @@ const ActivityRecords = props => {
     startIndex: 0,
   });
   const [isRefresh, setIsRefresh] = useState(false);
+  const [isDeleteModal, setDeleteModal] = useState(false);
+
+  const onDelete = () => {
+    setDeleteModal(true);
+  };
+
+  onDeleteCancel = () => {
+    setDeleteModal(false);
+  };
+
+  const deleteRecord = async () => {
+    try {
+      const db = await openDBConnection();
+      await deleteLogRecord(props.recordId, db);
+      Navigation.pop(props.componentId);
+    } catch (error) {
+      console.log(error);
+      showToast('Db Error');
+    }
+  };
 
   const onModalDismiss = async id => {
     try {
-      const db = await openDBConnection();
-      const record = await getLogRecordById(id, db);
-      if (record[0].rows.length) {
-        setListState({
-          ...listState,
-          data: [record[0].rows.item(0)].concat(listState.data),
-        });
-      }
-
+      refreshList();
       showToast('Saved successfully');
     } catch (error) {
       showToast('Db Error');
@@ -74,6 +86,7 @@ const ActivityRecords = props => {
   };
 
   const fetchLogRecords = async () => {
+    console.log(listState);
     try {
       const db = await openDBConnection();
       const results = await getLogRecordsByLogId(
@@ -115,6 +128,10 @@ const ActivityRecords = props => {
 
       if (!results[0].rows.length) {
         setIsRefresh(false);
+        setListState({
+          ...listState,
+          data: [],
+        });
         return;
       }
 
@@ -178,7 +195,7 @@ const ActivityRecords = props => {
     const navigationEventListener = Navigation.events().bindComponent({
       props: {componentId: props.componentId},
       componentWillAppear() {
-        fetchLogRecords();
+        refreshList();
       },
     });
 
@@ -196,7 +213,13 @@ const ActivityRecords = props => {
               data={listState.data}
               renderItem={renderItem}
               keyExtractor={item => item.id}
-              onEndReached={fetchLogRecords}
+              onEndReachedThreshold={0.1}
+              initialNumToRender={10}
+              onEndReached={info => {
+                if (info.distanceFromEnd > 0) {
+                  fetchLogRecords();
+                }
+              }}
               extraData={listState}
               ListEmptyComponent={renderEmptyList}
               onRefresh={refreshList}
@@ -212,6 +235,11 @@ const ActivityRecords = props => {
               onPress={showAddNewRecord}
             />
           </View>
+          <DeleteModal
+            isOpen={isDeleteModal}
+            onCancel={onDeleteCancel}
+            onDelete={deleteRecord}
+          />
           <View />
         </View>
       </RootSiblingParent>

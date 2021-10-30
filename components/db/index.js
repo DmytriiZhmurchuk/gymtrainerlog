@@ -99,6 +99,11 @@ export const getLogRecordsByLogId = async (
   return db.executeSql(query, [logId, pageSize, startIndex]);
 };
 
+export const deleteLogRecord = async (id, db) => {
+  const query = 'DELETE FROM LogActivities WHERE id=?';
+  return db.executeSql(query, [id]);
+};
+
 export const getLogRecordById = async (id, db) => {
   const query = 'SELECT * FROM LogActivities WHERE id=?';
   return db.executeSql(query, [id]);
