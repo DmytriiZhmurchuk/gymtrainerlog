@@ -1,23 +1,29 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet, FlatList, Modal} from 'react-native';
+import {View, Text, StyleSheet, FlatList} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {showToast} from '../utils';
 import {RootSiblingParent} from 'react-native-root-siblings';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {ListItem, SearchBar, Button, Input} from 'react-native-elements';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
+import IconMaterial from 'react-native-vector-icons/MaterialIcons';
+import LogModal from './Modal';
 
 import {
   createLog,
   openDBConnection,
   getLogsByClientId,
   getLogById,
+  updateLog,
 } from '../db';
 
 const ActivitiesList = props => {
   const [search, setSearch] = useState();
   const [showNewLogModal, setShowNewLogModal] = useState(false);
   const [logName, setLogName] = useState('');
+  const [logId, setLogId] = useState();
+  const [showEditModal, setEditModal] = useState(false);
+  const [isRefresh, setIsRefresh] = useState(false);
 
   const [listState, setListState] = useState({
     data: [],
@@ -31,6 +37,29 @@ const ActivitiesList = props => {
 
   const showAddNewRecord = () => {
     setShowNewLogModal(true);
+  };
+
+  const showEditLogModal = title => {
+    setLogName(title);
+    setEditModal(true);
+  };
+
+  const cancelEditModal = () => {
+    setEditModal(false);
+    setLogName('');
+    setLogId(null);
+  };
+
+  const saveEdit = async () => {
+    try {
+      const db = await openDBConnection();
+      await updateLog({title: logName, id: logId}, db);
+      setEditModal(false);
+      showToast('Saved succesfully');
+      onRefresh();
+    } catch (error) {
+      showToast('DB error');
+    }
   };
 
   const fetchLogs = async () => {
@@ -62,6 +91,39 @@ const ActivitiesList = props => {
     }
   };
 
+  const onRefresh = async () => {
+    setIsRefresh(true);
+    try {
+      const db = await openDBConnection();
+      const results = await getLogsByClientId(
+        props.clientId,
+        listState.limit,
+        0,
+        db,
+      );
+
+      if (!results[0].rows.length) {
+        setIsRefresh(false);
+        return;
+      }
+
+      var temp = [];
+      for (let i = 0; i < results[0].rows.length; ++i) {
+        temp.push(results[0].rows.item(i));
+      }
+
+      setListState({
+        ...listState,
+        startIndex: listState.limit + 1,
+        data: temp,
+      });
+      setIsRefresh(false);
+    } catch (error) {
+      setIsRefresh(false);
+      showToast('DB error');
+    }
+  };
+
   const openLogRecords = id => {
     Navigation.push(props.componentId, {
       component: {
@@ -86,6 +148,15 @@ const ActivitiesList = props => {
         onPress={() => {
           openLogRecords(item.id);
         }}>
+        <IconMaterial
+          name="mode-edit"
+          size={30}
+          color="#2196F3"
+          onPress={() => {
+            setLogId(item.id);
+            showEditLogModal(item.title);
+          }}
+        />
         <ListItem.Content>
           <ListItem.Title style={{fontSize: 20}}>{item.title}</ListItem.Title>
           <ListItem.Subtitle>{item.date}</ListItem.Subtitle>
@@ -174,6 +245,8 @@ const ActivitiesList = props => {
               onEndReached={fetchLogs}
               extraData={listState}
               ListEmptyComponent={renderEmptyList}
+              onRefresh={onRefresh}
+              refreshing={isRefresh}
             />
           </View>
           <View
@@ -185,47 +258,20 @@ const ActivitiesList = props => {
               onPress={showAddNewRecord}
             />
           </View>
-          <View>
-            <Modal
-              animationType="slide"
-              transparent={true}
-              visible={showNewLogModal}
-              onRequestClose={() => {
-                cancelNewLog();
-              }}>
-              <View style={styles.centeredView}>
-                <View style={styles.modalView}>
-                  <Input
-                    label="Enter log name"
-                    placeholder="e.g Leg day"
-                    onChangeText={value => {
-                      setLogName(value);
-                    }}
-                  />
-                  <View style={styles.row}>
-                    <Button
-                      title="Save"
-                      icon={<EvilIcon name="check" size={30} color="white" />}
-                      buttonStyle={{height: 50}}
-                      onPress={saveNewLog}
-                      containerStyle={{flex: 1, marginRight: 2.5}}
-                    />
-                    <Button
-                      title="Cancel"
-                      type="outline"
-                      icon={
-                        <EvilIcon name="close-o" size={30} color="#d32f2f" />
-                      }
-                      buttonStyle={{height: 50}}
-                      titleStyle={{color: '#d32f2f'}}
-                      onPress={cancelNewLog}
-                      containerStyle={{flex: 1, marginLeft: 2.5}}
-                    />
-                  </View>
-                </View>
-              </View>
-            </Modal>
-          </View>
+          <LogModal
+            isOpen={showNewLogModal}
+            onCancel={cancelNewLog}
+            onSave={saveNewLog}
+            onChangeText={setLogName}
+            value={logName}
+          />
+          <LogModal
+            isOpen={showEditModal}
+            onCancel={cancelEditModal}
+            onSave={saveEdit}
+            onChangeText={setLogName}
+            value={logName}
+          />
         </View>
       </RootSiblingParent>
     </SafeAreaProvider>
@@ -241,29 +287,6 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'center',
-  },
-  centeredView: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 22,
-  },
-  modalView: {
-    width: '90%',
-    height: 210,
-    margin: 20,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 35,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
   },
 });
 
