@@ -1,15 +1,23 @@
 import React, {useEffect, useState} from 'react';
 import {View, StyleSheet} from 'react-native';
-import {getLogRecordById, openDBConnection, updateLogRecord} from '../db';
+import {
+  getLogRecordById,
+  openDBConnection,
+  updateLogRecord,
+  deleteLogRecord,
+} from '../db';
 import {showToast} from '../utils';
 import {RootSiblingParent} from 'react-native-root-siblings';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {Button, Input, Card, Text} from 'react-native-elements';
 import IconMaterial from 'react-native-vector-icons/MaterialIcons';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
+import {Navigation} from 'react-native-navigation';
+import DeleteModal from '../widgets/DeleteModal';
 
 const EditActivityRecord = props => {
   const [isEditMode, setEditMode] = useState(false);
+  const [isDeleteModal, setDeleteModal] = useState(false);
   const [date, setDate] = useState('');
 
   const [title, setTitle] = useState('');
@@ -81,6 +89,27 @@ const EditActivityRecord = props => {
     setTime(value.trim());
   };
 
+  const deleteRecord = async () => {
+    // setDeleteModal(false);
+    //debugger;
+    try {
+      const db = await openDBConnection();
+      await deleteLogRecord(props.recordId, db);
+      Navigation.pop(props.componentId);
+    } catch (error) {
+      console.log(error);
+      showToast('Db Error');
+    }
+  };
+
+  const onDelete = () => {
+    setDeleteModal(true);
+  };
+
+  onDeleteCancel = () => {
+    setDeleteModal(false);
+  };
+
   useEffect(() => {
     if (!isEditMode) {
       fetchData();
@@ -116,6 +145,7 @@ const EditActivityRecord = props => {
                         name="delete-outline"
                         size={30}
                         color="#d32f2f"
+                        onPress={onDelete}
                       />
                     }
                     type="clear"
@@ -140,6 +170,11 @@ const EditActivityRecord = props => {
                 <Text style={{fontSize: 20}}>{time}</Text>
               </View>
             </Card>
+            <DeleteModal
+              isOpen={isDeleteModal}
+              onCancel={onDeleteCancel}
+              onDelete={deleteRecord}
+            />
           </View>
         )}
         {isEditMode && (
