@@ -4,22 +4,11 @@ import {Navigation} from 'react-native-navigation';
 import {showToast} from '../utils';
 import {RootSiblingParent} from 'react-native-root-siblings';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {
-  ListItem,
-  Avatar,
-  SearchBar,
-  Button,
-  Input,
-} from 'react-native-elements';
+import {ListItem, Button} from 'react-native-elements';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import IconMaterial from 'react-native-vector-icons/MaterialIcons';
 
-import {
-  createLog,
-  openDBConnection,
-  getLogsByClientId,
-  getLogRecordsByLogId,
-} from '../db';
+import {openDBConnection, getLogRecordsByLogId, getLogRecordById} from '../db';
 
 const ActivityRecords = props => {
   const [listState, setListState] = useState({
@@ -27,9 +16,23 @@ const ActivityRecords = props => {
     limit: 10,
     startIndex: 0,
   });
+  const [isRefresh, setIsRefresh] = useState(false);
 
-  const onModalDismiss = value => {
-    showToast('Saved successfully');
+  const onModalDismiss = async id => {
+    try {
+      const db = await openDBConnection();
+      const record = await getLogRecordById(id, db);
+      if (record[0].rows.length) {
+        setListState({
+          ...listState,
+          data: [record[0].rows.item(0)].concat(listState.data),
+        });
+      }
+
+      showToast('Saved successfully');
+    } catch (error) {
+      showToast('Db Error');
+    }
   };
 
   const showAddNewRecord = () => {
@@ -99,6 +102,39 @@ const ActivityRecords = props => {
     }
   };
 
+  const refreshList = async () => {
+    setIsRefresh(true);
+    try {
+      const db = await openDBConnection();
+      const results = await getLogRecordsByLogId(
+        props.logId,
+        listState.limit,
+        0,
+        db,
+      );
+
+      if (!results[0].rows.length) {
+        setIsRefresh(false);
+        return;
+      }
+
+      var temp = [];
+      for (let i = 0; i < results[0].rows.length; ++i) {
+        temp.push(results[0].rows.item(i));
+      }
+
+      setListState({
+        ...listState,
+        startIndex: listState.limit + 1,
+        data: temp,
+      });
+      setIsRefresh(false);
+    } catch (error) {
+      setIsRefresh(false);
+      showToast('DB error');
+    }
+  };
+
   const renderItem = ({item}) => {
     return (
       <ListItem
@@ -163,6 +199,8 @@ const ActivityRecords = props => {
               onEndReached={fetchLogRecords}
               extraData={listState}
               ListEmptyComponent={renderEmptyList}
+              onRefresh={refreshList}
+              refreshing={isRefresh}
             />
           </View>
           <View

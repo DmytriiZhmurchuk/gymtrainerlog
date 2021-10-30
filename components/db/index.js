@@ -28,16 +28,16 @@ export const createTables = async db => {
   const queryActivities = `CREATE TABLE IF NOT EXISTS LogActivities(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       title VARCHAR NOT NULL,
-      count INTEGER,
-      weight VARCHAR,
-      time VARCHAR,
+      count TEXT,
+      weight TEXT,
+      time TEXT,
       logId INTEGER NOT NULL,
       date DATETIME DEFAULT (datetime(CURRENT_TIMESTAMP, 'localtime')),
       FOREIGN KEY (logId) REFERENCES Logs(logId) ON DELETE CASCADE
   );`;
 
   db.transaction(async tx => {
-    // tx.executeSql('DROP TABLE Logs');
+    // tx.executeSql('DROP TABLE LogActivities');
     tx.executeSql(enableForeignKeys);
     tx.executeSql(queryActivities);
     tx.executeSql(query);
@@ -107,6 +107,11 @@ export const getLogRecordById = async (id, db) => {
 export const createLog = async (log, db) => {
   const query = 'INSERT INTO Logs(title,clientId) VALUES(?,?);';
   return db.executeSql(query, [log.title, log.clientId]);
+};
+
+export const updateLog = async (log, db) => {
+  const query = 'UPDATE Logs SET title=? WHERE id=?';
+  return db.executeSql(query, [log.title, log.id]);
 };
 
 export const createLogRecord = async (logRecord, db) => {

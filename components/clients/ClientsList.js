@@ -15,6 +15,7 @@ const ClientsList = props => {
     startIndex: 0,
   });
   const [search, setSearch] = useState();
+  const [isRefresh, setIsRefresh] = useState(false);
 
   const updateSearch = value => {
     setSearch(value);
@@ -48,18 +49,16 @@ const ClientsList = props => {
 
   const resetClientList = async () => {
     try {
+      setIsRefresh(true);
       setListState({
         limit: 10,
         startIndex: 0,
         data: [],
       });
       const db = await openDBConnection();
-      const results = await getAllClients(
-        db,
-        listState.limit,
-        listState.startIndex,
-      );
+      const results = await getAllClients(db, listState.limit, 0);
       if (!results[0].rows.length) {
+        setIsRefresh(false);
         return;
       }
       var temp = [];
@@ -70,9 +69,11 @@ const ClientsList = props => {
       setListState({
         ...listState,
         startIndex: listState.startIndex + listState.limit,
-        data: listState.data.concat(temp),
+        data: temp,
       });
+      setIsRefresh(false);
     } catch (error) {
+      setIsRefresh(false);
       showToast('DB error');
     }
   };
@@ -214,6 +215,8 @@ const ClientsList = props => {
               onEndReached={fetchClients}
               extraData={listState}
               ListEmptyComponent={renderEmptyList}
+              onRefresh={resetClientList}
+              refreshing={isRefresh}
             />
             <View
               style={{paddingHorizontal: 10, marginBottom: 50, marginTop: 10}}>
