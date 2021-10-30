@@ -2,17 +2,18 @@ import React, {useState, useRef} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import Input from '../widgets/Input';
-import TextArea from '../widgets/TextArea';
 import {RootSiblingParent} from 'react-native-root-siblings';
 import {showToast} from '../utils';
-import {openDBConnection, createClient, getClientByFirstLastName} from '../db';
+import {openDBConnection, createLogRecord} from '../db';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import {Button} from 'react-native-elements';
 
-const AddClient = props => {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [extraNotes, setExtraNotes] = useState('');
+const AddActivityRecord = props => {
+  const [title, setTitle] = useState('');
+  const [count, setCount] = useState('');
+  const [weight, setWeight] = useState('');
+  const [time, setTime] = useState('');
+
   const dbRef = useRef();
 
   const handleCancel = () => {
@@ -20,13 +21,8 @@ const AddClient = props => {
   };
 
   const handleSave = async () => {
-    if (!firstName.length) {
-      showToast('Client name  cannot be empty');
-      return;
-    }
-
-    if (!lastName.length) {
-      showToast('Client last name  cannot be empty');
+    if (!title.length) {
+      showToast('record title  cannot be empty');
       return;
     }
 
@@ -34,62 +30,61 @@ const AddClient = props => {
       if (!dbRef.current) {
         dbRef.current = await openDBConnection();
       }
-      const result = await getClientByFirstLastName(
-        {firstName, lastName},
+      const result = await createLogRecord(
+        {logId: props.logId, title, weight, count, time},
         dbRef.current,
       );
-      if (result[0]?.rows?.raw()?.length) {
-        showToast(`Client ${firstName} ${lastName} is already exists`);
-        return;
-      }
-
-      await createClient({firstName, lastName, extraNotes}, dbRef.current);
-      showToast('Saved successfully');
-      props.onModalDismiss();
+      props.onModalDismiss(result[0].insertId);
       handleCancel();
     } catch (err) {
-      showToast('Failed to save new client');
+      showToast('Failed to add record');
     }
   };
 
-  const onFirstNameChange = value => {
-    setFirstName(value.trim());
+  const onTitleChange = value => {
+    setTitle(value.trim());
   };
 
-  const onLastNameChange = value => {
-    setLastName(value.trim());
+  const onCountChange = value => {
+    setCount(value.trim());
   };
 
-  const onExtraNotesChange = value => {
-    setExtraNotes(value.trim());
+  const onWeightChange = value => {
+    setWeight(value.trim());
+  };
+
+  const onTimeChange = value => {
+    setTime(value.trim());
   };
 
   return (
     <RootSiblingParent>
       <View style={styles.container}>
         <View style={{flexGrow: 1}}>
-          <View style={styles.firstName}>
-            <Text style={styles.inputLabel}>First name:</Text>
+          <View style={styles.margin20}>
+            <Text style={styles.inputLabel}>Title:</Text>
             <Input
-              placeholder="Enter first name"
-              onChangeText={onFirstNameChange}
+              placeholder="Enter title e.g. Jumping for time"
+              onChangeText={onTitleChange}
             />
           </View>
-          <View style={styles.lastName}>
-            <Text style={styles.inputLabel}>Last name:</Text>
+
+          <View style={styles.margin20}>
+            <Text style={styles.inputLabel}>Count:</Text>
             <Input
-              placeholder="Enter last name"
-              onChangeText={onLastNameChange}
+              placeholder="Enter number of repeating"
+              onChangeText={onCountChange}
             />
           </View>
-          <View style={styles.notes}>
-            <Text style={styles.inputLabel}>Additional Notes:</Text>
-            <TextArea
-              placeholder="Enter additional notes"
-              multiline={true}
-              numberOfLines={10}
-              onChangeText={onExtraNotesChange}
-            />
+
+          <View style={styles.margin20}>
+            <Text style={styles.inputLabel}>Weight:</Text>
+            <Input placeholder="Enter Weight" onChangeText={onWeightChange} />
+          </View>
+
+          <View style={styles.margin20}>
+            <Text style={styles.inputLabel}>Enter time:</Text>
+            <Input placeholder="Enter Time" onChangeText={onTimeChange} />
           </View>
         </View>
         <View style={styles.row}>
@@ -141,15 +136,9 @@ const styles = StyleSheet.create({
   inputLabel: {
     color: '#9e9e9e',
   },
-  firstName: {
-    marginBottom: 20,
-  },
-  lastName: {
-    marginBottom: 20,
-  },
-  notes: {
+  margin20: {
     marginBottom: 20,
   },
 });
 
-export default AddClient;
+export default AddActivityRecord;

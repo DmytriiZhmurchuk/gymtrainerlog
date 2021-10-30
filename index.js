@@ -1,9 +1,11 @@
-import React from 'react';
 import {Navigation} from 'react-native-navigation';
-import App from './App';
 import {ClientsList, AddClient, EditClient} from './components/clients';
-import {ExercisesList, AddEditExercise} from './components/exercises';
-import {ActivitiesList, AddEditActivity} from './components/activities';
+import {
+  ActivitiesList,
+  ActivityRecords,
+  AddActivityRecord,
+  EditActivityRecord,
+} from './components/activities';
 import {patchKeyboardListener} from './components/utils';
 import {enablePromise} from 'react-native-sqlite-storage';
 
@@ -16,7 +18,7 @@ import {
 enablePromise(true);
 patchKeyboardListener();
 
-App.options = {
+ClientsList.options = {
   topBar: {
     title: {
       text: 'Home',
@@ -41,11 +43,9 @@ Navigation.setDefaultOptions({
   },
 });
 
-Navigation.registerComponent('com.gymtrainerlog.HomeScreen', props => App);
-
 Navigation.registerComponent(
-  'com.gymtrainerlog.ClientsList',
-  () => ClientsList,
+  'com.gymtrainerlog.HomeScreen',
+  props => ClientsList,
 );
 
 Navigation.registerComponent(
@@ -54,13 +54,13 @@ Navigation.registerComponent(
 );
 
 Navigation.registerComponent(
-  'com.gymtrainerlog.ExercisesList',
-  () => ExercisesList,
+  'com.gymtrainerlog.activities.ActivityRecords',
+  () => ActivityRecords,
 );
 
 Navigation.registerComponent(
-  'com.gymtrainerlog.activities.AddEditActivity',
-  () => AddEditActivity,
+  'com.gymtrainerlog.activities.EditActivityRecord',
+  () => EditActivityRecord,
 );
 
 Navigation.registerComponent(
@@ -69,13 +69,13 @@ Navigation.registerComponent(
 );
 
 Navigation.registerComponent(
-  'com.gymtrainerlog.clients.EditClient',
-  () => EditClient,
+  'com.gymtrainerlog.activities.AddActivityRecord',
+  () => AddActivityRecord,
 );
 
 Navigation.registerComponent(
-  'com.gymtrainerlog.exercises.AddEditExercise',
-  () => AddEditExercise,
+  'com.gymtrainerlog.clients.EditClient',
+  () => EditClient,
 );
 
 Navigation.events().registerAppLaunchedListener(async () => {
