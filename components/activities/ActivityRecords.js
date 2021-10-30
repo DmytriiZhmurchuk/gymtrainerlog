@@ -7,8 +7,9 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {ListItem, Button} from 'react-native-elements';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import IconMaterial from 'react-native-vector-icons/MaterialIcons';
+import DeleteModal from '../widgets/DeleteModal';
 
-import {openDBConnection, getLogRecordsByLogId} from '../db';
+import {openDBConnection, getLogRecordsByLogId, deleteLogRecord} from '../db';
 
 const ActivityRecords = props => {
   const [listState, setListState] = useState({
@@ -18,22 +19,25 @@ const ActivityRecords = props => {
   });
   const [isRefresh, setIsRefresh] = useState(false);
   const [isDeleteModal, setDeleteModal] = useState(false);
+  const [logRecordID, setLogRecordId] = useState();
 
-  const onDelete = () => {
+  const onDelete = id => {
+    setLogRecordId(id);
     setDeleteModal(true);
   };
 
   onDeleteCancel = () => {
+    setLogRecordId(null);
     setDeleteModal(false);
   };
 
   const deleteRecord = async () => {
     try {
       const db = await openDBConnection();
-      await deleteLogRecord(props.recordId, db);
-      Navigation.pop(props.componentId);
+      await deleteLogRecord(logRecordID, db);
+      setDeleteModal(false);
+      refreshList();
     } catch (error) {
-      console.log(error);
       showToast('Db Error');
     }
   };
@@ -169,7 +173,7 @@ const ActivityRecords = props => {
           size={40}
           color="#d32f2f"
           onPress={() => {
-            alert('delete');
+            onDelete(item.id);
           }}
         />
       </ListItem>
