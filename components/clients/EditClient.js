@@ -1,11 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
-import {
-  getClientById,
-  updateClientById,
-  openDBConnection,
-  getClientByFirstLastName,
-} from '../db';
+import {getClientById, updateClientById, openDBConnection} from '../db';
 import {showToast} from '../utils';
 import {RootSiblingParent} from 'react-native-root-siblings';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
@@ -55,11 +50,7 @@ const EditClient = props => {
 
     try {
       const db = await openDBConnection();
-      const result = await getClientByFirstLastName({firstName, lastName}, db);
-      if (result[0]?.rows?.raw()?.length) {
-        showToast(`Client ${firstName} ${lastName} is already exists`);
-        return;
-      }
+
       await updateClientById(
         {id: props.clientId, firstName, lastName, extraNotes},
         db,

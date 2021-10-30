@@ -4,15 +4,15 @@ import {Navigation} from 'react-native-navigation';
 import {showToast} from '../utils';
 import {RootSiblingParent} from 'react-native-root-siblings';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {
-  ListItem,
-  Avatar,
-  SearchBar,
-  Button,
-  Input,
-} from 'react-native-elements';
+import {ListItem, SearchBar, Button, Input} from 'react-native-elements';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
-import {createLog, openDBConnection, getLogsByClientId} from '../db';
+
+import {
+  createLog,
+  openDBConnection,
+  getLogsByClientId,
+  getLogById,
+} from '../db';
 
 const ActivitiesList = props => {
   const [search, setSearch] = useState();
@@ -33,18 +33,7 @@ const ActivitiesList = props => {
     setShowNewLogModal(true);
   };
 
-  const fetchLogs = () => {
-    setListState({...listState});
-  };
-
-  const refreshLogs = async () => {
-    debugger;
-    setListState({
-      limit: 10,
-      startIndex: 0,
-      data: [],
-    });
-
+  const fetchLogs = async () => {
     try {
       const db = await openDBConnection();
       const results = await getLogsByClientId(
@@ -53,7 +42,7 @@ const ActivitiesList = props => {
         listState.startIndex,
         db,
       );
-      debugger;
+
       if (!results[0].rows.length) {
         return;
       }
@@ -65,13 +54,28 @@ const ActivitiesList = props => {
 
       setListState({
         ...listState,
-        startIndex: listState.startIndex + listState.limit,
+        startIndex: listState.startIndex + listState.limit + 1,
         data: listState.data.concat(temp),
       });
     } catch (error) {
-      console.log(error);
-      showToast('DB error to fetch log list');
+      showToast('DB error');
     }
+  };
+
+  const openLogRecords = id => {
+    Navigation.push(props.componentId, {
+      component: {
+        name: 'com.gymtrainerlog.activities.ActivityRecords',
+        passProps: {logId: id},
+        options: {
+          topBar: {
+            title: {
+              text: 'Records',
+            },
+          },
+        },
+      },
+    });
   };
 
   const renderItem = ({item}) => {
@@ -80,7 +84,7 @@ const ActivitiesList = props => {
         key={item.id}
         bottomDivider
         onPress={() => {
-          alert('press');
+          openLogRecords(item.id);
         }}>
         <ListItem.Content>
           <ListItem.Title style={{fontSize: 20}}>{item.title}</ListItem.Title>
@@ -112,7 +116,17 @@ const ActivitiesList = props => {
     }
     try {
       const db = await openDBConnection();
-      await createLog({title: logName, clientId: props.clientId}, db);
+      const result = await createLog(
+        {title: logName, clientId: props.clientId},
+        db,
+      );
+      const newLog = await getLogById(result[0].insertId, db);
+      if (newLog[0].rows.length) {
+        setListState({
+          ...listState,
+          data: [newLog[0].rows.item(0)].concat(listState.data),
+        });
+      }
       setShowNewLogModal(false);
       setLogName('');
       showToast('Saved');
@@ -121,6 +135,7 @@ const ActivitiesList = props => {
       setLogName('');
     }
   };
+
   const cancelNewLog = () => {
     setShowNewLogModal(false);
     setLogName('');
@@ -130,7 +145,7 @@ const ActivitiesList = props => {
     const navigationEventListener = Navigation.events().bindComponent({
       props: {componentId: props.componentId},
       componentWillAppear() {
-        refreshLogs();
+        fetchLogs();
       },
     });
 

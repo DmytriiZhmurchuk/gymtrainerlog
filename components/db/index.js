@@ -79,8 +79,13 @@ export const getClientById = async (id, db) => {
 
 export const getLogsByClientId = async (clientId, pageSize, startIndex, db) => {
   const query =
-    'SELECT * FROM Logs WHERE clientId=? ORDER BY date LIMIT ? OFFSET ?';
-  return db.executeSql(query, [1, pageSize, startIndex]);
+    'SELECT * FROM Logs WHERE clientId=? ORDER BY date DESC LIMIT ? OFFSET ?';
+  return db.executeSql(query, [clientId, pageSize, startIndex]);
+};
+
+export const getLogById = async (id, db) => {
+  const query = 'SELECT * FROM Logs WHERE id=?';
+  return db.executeSql(query, [id]);
 };
 
 export const getLogRecordsByLogId = async (
@@ -90,19 +95,24 @@ export const getLogRecordsByLogId = async (
   db,
 ) => {
   const query =
-    'SELECT * FROM LogActivities WHERE logId=? ORDER BY date LIMIT ? OFFSET ?';
+    'SELECT * FROM LogActivities WHERE logId=? ORDER BY date DESC LIMIT ? OFFSET ?';
   return db.executeSql(query, [logId, pageSize, startIndex]);
+};
+
+export const getLogRecordById = async (id, db) => {
+  const query = 'SELECT * FROM LogActivities WHERE id=?';
+  return db.executeSql(query, [id]);
 };
 
 export const createLog = async (log, db) => {
   const query = 'INSERT INTO Logs(title,clientId) VALUES(?,?);';
-  db.executeSql(query, [log.title, log.clientId]);
+  return db.executeSql(query, [log.title, log.clientId]);
 };
 
 export const createLogRecord = async (logRecord, db) => {
   const query =
     'INSERT INTO LogActivities(logId,title,weight,count,time) VALUES(?,?,?,?,?);';
-  db.executeSql(query, [
+  return db.executeSql(query, [
     logRecord.logId,
     logRecord.title,
     logRecord.weight,

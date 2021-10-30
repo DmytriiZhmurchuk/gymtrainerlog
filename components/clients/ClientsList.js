@@ -38,7 +38,7 @@ const ClientsList = props => {
 
       setListState({
         ...listState,
-        startIndex: listState.startIndex + listState.limit,
+        startIndex: listState.startIndex + listState.limit + 1,
         data: listState.data.concat(temp),
       });
     } catch (error) {

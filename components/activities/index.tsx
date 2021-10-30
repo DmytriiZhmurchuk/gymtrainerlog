@@ -1,3 +1,5 @@
 import ActivitiesList from "./ActivitiesList";
-import AddEditActivity from "./AddEditActivity";
-export {ActivitiesList,AddEditActivity}
+import AddActivityRecord from "./AddActivityRecord";
+import ActivityRecords from "./ActivityRecords"
+import EditActivityRecord from "./EditActivityRecord";
+export {ActivitiesList,ActivityRecords,AddActivityRecord,EditActivityRecord}
