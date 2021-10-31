@@ -38,6 +38,7 @@ const ActivityRecords = props => {
       setDeleteModal(false);
       refreshList();
     } catch (error) {
+      setDeleteModal(false);
       showToast('Db Error');
     }
   };
@@ -196,6 +197,21 @@ const ActivityRecords = props => {
   };
 
   useEffect(() => {
+    Navigation.mergeOptions(props.componentId, {
+      topBar: {
+        rightButtons: [
+          {
+            id: 'backtohome',
+            component: {
+              name: 'com.gymtrainerlog.NavigationHomeButton',
+              passProps: {
+                id: props.componentId,
+              },
+            },
+          },
+        ],
+      },
+    });
     const navigationEventListener = Navigation.events().bindComponent({
       props: {componentId: props.componentId},
       componentWillAppear() {

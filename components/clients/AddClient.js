@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import Input from '../widgets/Input';
@@ -63,6 +63,14 @@ const AddClient = props => {
   const onExtraNotesChange = value => {
     setExtraNotes(value.trim());
   };
+
+  useEffect(() => {
+    Navigation.mergeOptions(props.componentId, {
+      topBar: {
+        rightButtons: [],
+      },
+    });
+  }, [props.componentId]);
 
   return (
     <RootSiblingParent>

@@ -59,6 +59,10 @@ const ClientsList = props => {
       const results = await getAllClients(db, listState.limit, 0);
       if (!results[0].rows.length) {
         setIsRefresh(false);
+        setListState({
+          ...listState,
+          data: [],
+        });
         return;
       }
       var temp = [];
@@ -190,6 +194,12 @@ const ClientsList = props => {
       },
     });
 
+    Navigation.mergeOptions(props.componentId, {
+      topBar: {
+        rightButtons: [],
+      },
+    });
+
     return () => {
       navigationEventListener.remove();
     };
@@ -212,7 +222,12 @@ const ClientsList = props => {
               data={listState.data}
               renderItem={renderItem}
               keyExtractor={item => item.id}
-              onEndReached={fetchClients}
+              initialNumToRender={10}
+              onEndReached={info => {
+                if (info.distanceFromEnd > 0) {
+                  fetchClients();
+                }
+              }}
               extraData={listState}
               ListEmptyComponent={renderEmptyList}
               onRefresh={resetClientList}
