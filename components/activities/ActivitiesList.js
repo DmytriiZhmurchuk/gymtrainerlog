@@ -69,27 +69,19 @@ const ActivitiesList = props => {
   const fetchLogs = async () => {
     try {
       const db = await openDBConnection();
-      const results = await getLogsByClientId(
+      const {data, count} = await getLogsByClientId(
         props.clientId,
         listState.limit,
         listState.startIndex,
         db,
       );
-
-      if (!results[0].rows.length) {
-        return;
+      if (count > listState.data.length) {
+        setListState({
+          ...listState,
+          startIndex: listState.startIndex + listState.limit,
+          data: listState.data.concat(data),
+        });
       }
-
-      var temp = [];
-      for (let i = 0; i < results[0].rows.length; ++i) {
-        temp.push(results[0].rows.item(i));
-      }
-
-      setListState({
-        ...listState,
-        startIndex: listState.startIndex + listState.limit + 1,
-        data: listState.data.concat(temp),
-      });
     } catch (error) {
       showToast('DB error');
     }
@@ -99,32 +91,19 @@ const ActivitiesList = props => {
     setIsRefresh(true);
     try {
       const db = await openDBConnection();
-      const results = await getLogsByClientId(
+      const {data} = await getLogsByClientId(
         props.clientId,
         listState.limit,
         0,
         db,
       );
 
-      if (!results[0].rows.length) {
-        setIsRefresh(false);
-        setListState({
-          ...listState,
-          data: [],
-        });
-        return;
-      }
-
-      var temp = [];
-      for (let i = 0; i < results[0].rows.length; ++i) {
-        temp.push(results[0].rows.item(i));
-      }
-
       setListState({
         ...listState,
         startIndex: listState.limit + 1,
-        data: temp,
+        data: data,
       });
+
       setIsRefresh(false);
     } catch (error) {
       setIsRefresh(false);

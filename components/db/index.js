@@ -67,12 +67,7 @@ export const updateClientById = async (client, db) => {
   ]);
 };
 
-export const getAllClients = async (
-  db,
-  pageSize = 15,
-  startIndex = 0,
-  search,
-) => {
+export const getAllClients = async (db, pageSize = 15, startIndex = 0) => {
   return new Promise(async (resolve, reject) => {
     const query = 'SELECT * FROM Clients ORDER BY firstName LIMIT ? OFFSET ?';
     const count = 'SELECT COUNT(*) FROM Clients';
@@ -118,9 +113,20 @@ export const getClientById = async (id, db) => {
 };
 
 export const getLogsByClientId = async (clientId, pageSize, startIndex, db) => {
-  const query =
-    'SELECT * FROM Logs WHERE clientId=? ORDER BY date DESC LIMIT ? OFFSET ?';
-  return db.executeSql(query, [clientId, pageSize, startIndex]);
+  return new Promise(async (resolve, reject) => {
+    const query =
+      'SELECT * FROM Logs WHERE clientId=? ORDER BY date DESC LIMIT ? OFFSET ?';
+    const count = 'SELECT COUNT(*) FROM Clients';
+    const result = await db.executeSql(query, [clientId, pageSize, startIndex]);
+    const countResult = await db.executeSql(count);
+    const rows = result[0].rows;
+    const data = [];
+
+    for (let i = 0; i < rows.length; ++i) {
+      data.push(rows.item(i));
+    }
+    resolve({data, count: countResult[0].rows.item(0)['COUNT(*)']});
+  });
 };
 
 export const getLogById = async (id, db) => {
