@@ -51,6 +51,11 @@ export const createClient = async (client, db) => {
   db.executeSql(query, [client.firstName, client.lastName, client.extraNotes]);
 };
 
+export const removeClient = async (id, db) => {
+  const query = 'DELETE FROM Clients WHERE id=?';
+  return db.executeSql(query, [id]);
+};
+
 export const updateClientById = async (client, db) => {
   const query =
     'UPDATE Clients SET firstName=?,lastName=?,extraNotes=? WHERE id=?';
@@ -117,6 +122,11 @@ export const createLog = async (log, db) => {
 export const updateLog = async (log, db) => {
   const query = 'UPDATE Logs SET title=? WHERE id=?';
   return db.executeSql(query, [log.title, log.id]);
+};
+
+export const deleteLog = async (id, db) => {
+  const query = 'DELETE FROM Logs WHERE id=?';
+  return db.executeSql(query, [id]);
 };
 
 export const createLogRecord = async (logRecord, db) => {

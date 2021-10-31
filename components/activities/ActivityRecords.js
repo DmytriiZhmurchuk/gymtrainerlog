@@ -38,6 +38,7 @@ const ActivityRecords = props => {
       setDeleteModal(false);
       refreshList();
     } catch (error) {
+      setDeleteModal(false);
       showToast('Db Error');
     }
   };

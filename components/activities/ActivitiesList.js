@@ -8,6 +8,7 @@ import {ListItem, SearchBar, Button, Input} from 'react-native-elements';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import IconMaterial from 'react-native-vector-icons/MaterialIcons';
 import LogModal from './Modal';
+import DeleteModal from '../widgets/DeleteModal';
 
 import {
   createLog,
@@ -15,11 +16,14 @@ import {
   getLogsByClientId,
   getLogById,
   updateLog,
+  deleteLog,
 } from '../db';
 
 const ActivitiesList = props => {
   const [search, setSearch] = useState();
   const [showNewLogModal, setShowNewLogModal] = useState(false);
+  const [showDeleteLogModal, setShowDeleteLogModal] = useState(false);
+
   const [logName, setLogName] = useState('');
   const [logId, setLogId] = useState();
   const [showEditModal, setEditModal] = useState(false);
@@ -104,6 +108,10 @@ const ActivitiesList = props => {
 
       if (!results[0].rows.length) {
         setIsRefresh(false);
+        setListState({
+          ...listState,
+          data: [],
+        });
         return;
       }
 
@@ -140,11 +148,35 @@ const ActivitiesList = props => {
     });
   };
 
+  const removeLog = async () => {
+    try {
+      const db = await openDBConnection();
+      await deleteLog(logId, db);
+      setLogId(null);
+      setShowDeleteLogModal(false);
+      showToast('Removed successfully');
+      onRefresh();
+    } catch (error) {
+      setLogId(null);
+      setShowDeleteLogModal(false);
+      showToast('Failed to delete activity');
+    }
+  };
+
+  const cancelDeleteLog = () => {
+    setLogId(null);
+    setShowDeleteLogModal(false);
+  };
+
   const renderItem = ({item}) => {
     return (
       <ListItem
         key={item.id}
         bottomDivider
+        onLongPress={() => {
+          setLogId(item.id);
+          setShowDeleteLogModal(true);
+        }}
         onPress={() => {
           openLogRecords(item.id);
         }}>
@@ -242,7 +274,13 @@ const ActivitiesList = props => {
               data={listState.data}
               renderItem={renderItem}
               keyExtractor={item => item.id}
-              onEndReached={fetchLogs}
+              onEndReachedThreshold={0.1}
+              initialNumToRender={10}
+              onEndReached={info => {
+                if (info.distanceFromEnd > 0) {
+                  fetchLogs();
+                }
+              }}
               extraData={listState}
               ListEmptyComponent={renderEmptyList}
               onRefresh={onRefresh}
@@ -271,6 +309,11 @@ const ActivitiesList = props => {
             onSave={saveEdit}
             onChangeText={setLogName}
             value={logName}
+          />
+          <DeleteModal
+            isOpen={showDeleteLogModal}
+            onDelete={removeLog}
+            onCancel={cancelDeleteLog}
           />
         </View>
       </RootSiblingParent>

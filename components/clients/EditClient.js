@@ -1,17 +1,25 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
-import {getClientById, updateClientById, openDBConnection} from '../db';
+import {
+  getClientById,
+  updateClientById,
+  openDBConnection,
+  removeClient,
+} from '../db';
 import {showToast} from '../utils';
 import {RootSiblingParent} from 'react-native-root-siblings';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {Avatar, Button, Input} from 'react-native-elements';
 import IconMaterial from 'react-native-vector-icons/MaterialIcons';
+import DeleteModal from '../widgets/DeleteModal';
+import {Navigation} from 'react-native-navigation';
 
 const EditClient = props => {
   const [isEditMode, setEditMode] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [extraNotes, setExtraNotes] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -78,6 +86,22 @@ const EditClient = props => {
     setExtraNotes(value.trim());
   };
 
+  const deleteClient = async () => {
+    try {
+      const db = await openDBConnection();
+      await removeClient(props.clientId, db);
+      setShowDeleteModal(false);
+      Navigation.pop(props.componentId);
+    } catch (error) {
+      setShowDeleteModal(false);
+      showToast('Failed to remove client');
+    }
+  };
+
+  const cancelDeleteClient = () => {
+    setShowDeleteModal(false);
+  };
+
   useEffect(() => {
     if (!isEditMode) {
       fetchData();
@@ -107,6 +131,9 @@ const EditClient = props => {
                       name="delete-outline"
                       size={30}
                       color="#d32f2f"
+                      onPress={() => {
+                        setShowDeleteModal(true);
+                      }}
                     />
                   }
                   buttonStyle={{borderColor: '#d32f2f', height: 50}}
@@ -181,6 +208,11 @@ const EditClient = props => {
             disabled={!isEditMode}
           />
         </View>
+        <DeleteModal
+          isOpen={showDeleteModal}
+          onDelete={deleteClient}
+          onCancel={cancelDeleteClient}
+        />
       </RootSiblingParent>
     </SafeAreaProvider>
   );
