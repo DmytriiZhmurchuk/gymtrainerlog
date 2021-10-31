@@ -59,6 +59,7 @@ const ClientsList = props => {
   const resetClientList = async () => {
     try {
       setIsRefresh(true);
+      setSearch(undefined);
 
       const db = await openDBConnection();
       const {data} = await getAllClients(db, listState.limit, 0, search);
