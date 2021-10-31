@@ -194,6 +194,12 @@ const ClientsList = props => {
       },
     });
 
+    Navigation.mergeOptions(props.componentId, {
+      topBar: {
+        rightButtons: [],
+      },
+    });
+
     return () => {
       navigationEventListener.remove();
     };

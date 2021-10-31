@@ -1,5 +1,6 @@
 import {Navigation} from 'react-native-navigation';
 import {ClientsList, AddClient, EditClient} from './components/clients';
+import NavigationHomeButton from './components/widgets/HomeButton';
 import {
   ActivitiesList,
   ActivityRecords,
@@ -26,6 +27,11 @@ ClientsList.options = {
   },
 };
 
+Navigation.registerComponent(
+  'com.gymtrainerlog.NavigationHomeButton',
+  () => NavigationHomeButton,
+);
+
 Navigation.setDefaultOptions({
   statusBar: {
     backgroundColor: '#2196F3',
@@ -42,6 +48,11 @@ Navigation.setDefaultOptions({
     },
   },
 });
+
+Navigation.registerComponent(
+  'com.gymtrainerlog.NavigationHomeButton',
+  () => NavigationHomeButton,
+);
 
 Navigation.registerComponent(
   'com.gymtrainerlog.HomeScreen',

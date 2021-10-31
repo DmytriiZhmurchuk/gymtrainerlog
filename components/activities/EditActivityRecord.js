@@ -90,8 +90,6 @@ const EditActivityRecord = props => {
   };
 
   const deleteRecord = async () => {
-    // setDeleteModal(false);
-    //debugger;
     try {
       const db = await openDBConnection();
       await deleteLogRecord(props.recordId, db);
@@ -111,6 +109,21 @@ const EditActivityRecord = props => {
   };
 
   useEffect(() => {
+    Navigation.mergeOptions(props.componentId, {
+      topBar: {
+        rightButtons: [
+          {
+            id: 'backtohome',
+            component: {
+              name: 'com.gymtrainerlog.NavigationHomeButton',
+              passProps: {
+                id: props.componentId,
+              },
+            },
+          },
+        ],
+      },
+    });
     if (!isEditMode) {
       fetchData();
     }
@@ -263,10 +276,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   row: {
-    // flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    // paddingHorizontal: 15,
   },
 });
 
