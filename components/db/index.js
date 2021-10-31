@@ -67,9 +67,44 @@ export const updateClientById = async (client, db) => {
   ]);
 };
 
-export const getAllClients = async (db, pageSize = 15, startIndex = 0) => {
-  const query = 'SELECT * FROM Clients ORDER BY firstName LIMIT ? OFFSET ?';
-  return db.executeSql(query, [pageSize, startIndex]);
+export const getAllClients = async (
+  db,
+  pageSize = 15,
+  startIndex = 0,
+  search,
+) => {
+  return new Promise(async (resolve, reject) => {
+    const query = 'SELECT * FROM Clients ORDER BY firstName LIMIT ? OFFSET ?';
+    const count = 'SELECT COUNT(*) FROM Clients';
+    const result = await db.executeSql(query, [pageSize, startIndex]);
+    const countResult = await db.executeSql(count);
+    const rows = result[0].rows;
+    const data = [];
+
+    for (let i = 0; i < rows.length; ++i) {
+      data.push(rows.item(i));
+    }
+    resolve({data, count: countResult[0].rows.item(0)['COUNT(*)']});
+  });
+};
+
+export const searchClients = async (search, db) => {
+  return new Promise(async (resolve, reject) => {
+    const query =
+      'SELECT * FROM Clients  WHERE "firstName" LIKE "%' +
+      search +
+      '%" OR "lastName" LIKE "%' +
+      search +
+      '%"';
+
+    const result = await db.executeSql(query);
+    const rows = result[0].rows;
+    const data = [];
+    for (let i = 0; i < rows.length; ++i) {
+      data.push(rows.item(i));
+    }
+    resolve({data});
+  });
 };
 
 export const getClientByFirstLastName = async (client, db) => {

@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet, FlatList} from 'react-native';
 import {Navigation} from 'react-native-navigation';
-import {getAllClients, openDBConnection} from '../db';
+import {getAllClients, openDBConnection, searchClients} from '../db';
 import {showToast} from '../utils';
 import {RootSiblingParent} from 'react-native-root-siblings';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
@@ -21,27 +21,36 @@ const ClientsList = props => {
     setSearch(value);
   };
 
-  const fetchClients = async () => {
+  const doSearch = async () => {
     try {
       const db = await openDBConnection();
-      const results = await getAllClients(
-        db,
-        listState.limit,
-        listState.startIndex,
-      );
-      if (!results[0].rows.length) {
-        return;
-      }
-      var temp = [];
-      for (let i = 0; i < results[0].rows.length; ++i) {
-        temp.push(results[0].rows.item(i));
-      }
+      const {data} = await searchClients(search, db);
 
       setListState({
         ...listState,
-        startIndex: listState.startIndex + listState.limit + 1,
-        data: listState.data.concat(temp),
+        data: data,
       });
+    } catch (error) {
+      showToast('DB error');
+    }
+  };
+
+  const fetchClients = async () => {
+    try {
+      const db = await openDBConnection();
+      const {data, count} = await getAllClients(
+        db,
+        listState.limit,
+        listState.startIndex,
+        search,
+      );
+      if (count > listState.data.length) {
+        setListState({
+          ...listState,
+          startIndex: listState.startIndex + listState.limit,
+          data: listState.data.concat(data),
+        });
+      }
     } catch (error) {
       showToast('DB error');
     }
@@ -50,31 +59,16 @@ const ClientsList = props => {
   const resetClientList = async () => {
     try {
       setIsRefresh(true);
-      setListState({
-        limit: 10,
-        startIndex: 0,
-        data: [],
-      });
+
       const db = await openDBConnection();
-      const results = await getAllClients(db, listState.limit, 0);
-      if (!results[0].rows.length) {
-        setIsRefresh(false);
-        setListState({
-          ...listState,
-          data: [],
-        });
-        return;
-      }
-      var temp = [];
-      for (let i = 0; i < results[0].rows.length; ++i) {
-        temp.push(results[0].rows.item(i));
-      }
+      const {data} = await getAllClients(db, listState.limit, 0, search);
 
       setListState({
         ...listState,
-        startIndex: listState.startIndex + listState.limit,
-        data: temp,
+        startIndex: listState.limit + 1,
+        data,
       });
+
       setIsRefresh(false);
     } catch (error) {
       setIsRefresh(false);
@@ -83,7 +77,9 @@ const ClientsList = props => {
   };
 
   const onModalDismiss = () => {
-    resetClientList();
+    if (!search) {
+      resetClientList();
+    }
   };
 
   const showAddNewClient = () => {
@@ -205,6 +201,21 @@ const ClientsList = props => {
     };
   }, [props.componentId]);
 
+  useEffect(() => {
+    if (search === undefined) {
+      return;
+    }
+    const delayDebounceFn = setTimeout(() => {
+      if (search === '') {
+        resetClientList();
+      } else {
+        doSearch();
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [search]);
+
   return (
     <SafeAreaProvider>
       <RootSiblingParent>
@@ -223,8 +234,9 @@ const ClientsList = props => {
               renderItem={renderItem}
               keyExtractor={item => item.id}
               initialNumToRender={10}
+              onEndReachedThreshold={0.1}
               onEndReached={info => {
-                if (info.distanceFromEnd > 0) {
+                if (info.distanceFromEnd > 0 && !search) {
                   fetchClients();
                 }
               }}
