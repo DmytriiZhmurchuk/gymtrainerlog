@@ -101,6 +101,19 @@ export const searchClients = async (search, db) => {
     resolve({data});
   });
 };
+export const searchLogs = async (search, db) => {
+  return new Promise(async (resolve, reject) => {
+    const query = 'SELECT * FROM Logs  WHERE "title" LIKE "%' + search + '%"';
+
+    const result = await db.executeSql(query);
+    const rows = result[0].rows;
+    const data = [];
+    for (let i = 0; i < rows.length; ++i) {
+      data.push(rows.item(i));
+    }
+    resolve({data});
+  });
+};
 
 export const getClientByFirstLastName = async (client, db) => {
   const query = 'SELECT * FROM Clients WHERE firstName=? AND lastName=?';

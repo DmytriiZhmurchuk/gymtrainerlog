@@ -4,7 +4,7 @@ import {Navigation} from 'react-native-navigation';
 import {showToast} from '../utils';
 import {RootSiblingParent} from 'react-native-root-siblings';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {ListItem, SearchBar, Button, Input} from 'react-native-elements';
+import {ListItem, SearchBar, Button} from 'react-native-elements';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import IconMaterial from 'react-native-vector-icons/MaterialIcons';
 import LogModal from './Modal';
@@ -17,6 +17,7 @@ import {
   getLogById,
   updateLog,
   deleteLog,
+  searchLogs,
 } from '../db';
 
 const ActivitiesList = props => {
@@ -54,6 +55,20 @@ const ActivitiesList = props => {
     setLogId(null);
   };
 
+  const doSearch = async () => {
+    try {
+      const db = await openDBConnection();
+      const {data} = await searchLogs(search, db);
+
+      setListState({
+        ...listState,
+        data: data,
+      });
+    } catch (error) {
+      showToast('DB error');
+    }
+  };
+
   const saveEdit = async () => {
     try {
       const db = await openDBConnection();
@@ -89,6 +104,7 @@ const ActivitiesList = props => {
 
   const onRefresh = async () => {
     setIsRefresh(true);
+    setSearch(undefined);
     try {
       const db = await openDBConnection();
       const {data} = await getLogsByClientId(
@@ -236,6 +252,21 @@ const ActivitiesList = props => {
     };
   }, [props.componentId]);
 
+  useEffect(() => {
+    if (search === undefined) {
+      return;
+    }
+    const delayDebounceFn = setTimeout(() => {
+      if (search === '') {
+        onRefresh();
+      } else {
+        doSearch();
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [search]);
+
   return (
     <SafeAreaProvider>
       <RootSiblingParent>
@@ -256,7 +287,7 @@ const ActivitiesList = props => {
               onEndReachedThreshold={0.1}
               initialNumToRender={10}
               onEndReached={info => {
-                if (info.distanceFromEnd > 0) {
+                if (info.distanceFromEnd > 0 && !search) {
                   fetchLogs();
                 }
               }}
