@@ -1,5 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  KeyboardAvoidingView,
+  Keyboard,
+} from 'react-native';
 import {
   getClientById,
   updateClientById,
@@ -110,109 +117,120 @@ const EditClient = props => {
   return (
     <SafeAreaProvider>
       <RootSiblingParent>
-        <View style={styles.container}>
-          <Avatar
-            rounded
-            size="xlarge"
-            icon={{name: 'user', type: 'font-awesome'}}
-            onPress={() => console.log('Works!')}
-            activeOpacity={0.7}
-            overlayContainerStyle={{backgroundColor: '#eeeeee'}}
-          />
-          <View>
-            <Text style={{fontSize: 20}}>{`${firstName} ${lastName}`}</Text>
-          </View>
-          {!isEditMode && (
-            <View style={styles.row}>
-              <View>
-                <Button
-                  icon={
-                    <IconMaterial
-                      name="delete-outline"
-                      size={30}
-                      color="#d32f2f"
-                      onPress={() => {
-                        setShowDeleteModal(true);
-                      }}
-                    />
-                  }
-                  buttonStyle={{borderColor: '#d32f2f', height: 50}}
-                  type="clear"
+        <KeyboardAvoidingView behavior={'position'} style={{flex: 1}}>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View>
+              <View style={styles.container}>
+                <Avatar
+                  rounded
+                  size="xlarge"
+                  icon={{name: 'user', type: 'font-awesome'}}
+                  onPress={() => console.log('Works!')}
+                  activeOpacity={0.7}
+                  overlayContainerStyle={{backgroundColor: '#eeeeee'}}
+                />
+                <View>
+                  <Text
+                    style={{fontSize: 20}}>{`${firstName} ${lastName}`}</Text>
+                </View>
+                {!isEditMode && (
+                  <View style={styles.row}>
+                    <View>
+                      <Button
+                        icon={
+                          <IconMaterial
+                            name="delete-outline"
+                            size={30}
+                            color="#d32f2f"
+                            onPress={() => {
+                              setShowDeleteModal(true);
+                            }}
+                          />
+                        }
+                        buttonStyle={{borderColor: '#d32f2f', height: 50}}
+                        type="clear"
+                      />
+                    </View>
+                    <View style={{marginLeft: 20}}>
+                      <Button
+                        icon={
+                          <IconMaterial
+                            name="mode-edit"
+                            size={30}
+                            color="#2196F3"
+                          />
+                        }
+                        buttonStyle={{height: 50}}
+                        type="clear"
+                        onPress={enableEditMode}
+                      />
+                    </View>
+                  </View>
+                )}
+                {isEditMode && (
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      paddingVertical: 10,
+                      paddingHorizontal: 10,
+                    }}>
+                    <View style={{marginRight: 20}}>
+                      <Button
+                        buttonStyle={{height: 50}}
+                        type="solid"
+                        title={'Save changes'}
+                        titleStyle={{fontSize: 20}}
+                        onPress={saveChanges}
+                      />
+                    </View>
+                    <View>
+                      <Button
+                        type="outline"
+                        title={'Cancel changes'}
+                        buttonStyle={{
+                          borderColor: '#d32f2f',
+                          height: 50,
+                        }}
+                        titleStyle={{color: '#d32f2f', fontSize: 20}}
+                        onPress={cancelChanges}
+                      />
+                    </View>
+                  </View>
+                )}
+              </View>
+              <View style={{marginTop: 40}}>
+                <Input
+                  inputStyle={{fontSize: 20}}
+                  placeholder="Enter firstname"
+                  value={firstName}
+                  onChangeText={onFirstNameChange}
+                  disabled={!isEditMode}
+                />
+                <Input
+                  inputStyle={{fontSize: 20}}
+                  placeholder="Enter lastname"
+                  value={lastName}
+                  onChangeText={onLastNameChange}
+                  disabled={!isEditMode}
+                />
+                <Input
+                  inputStyle={{fontSize: 20}}
+                  placeholder="Enter extra notes"
+                  value={extraNotes}
+                  onChangeText={onExtraNotesChange}
+                  multiline={true}
+                  numberOfLines={10}
+                  disabled={!isEditMode}
                 />
               </View>
-              <View style={{marginLeft: 20}}>
-                <Button
-                  icon={
-                    <IconMaterial name="mode-edit" size={30} color="#2196F3" />
-                  }
-                  buttonStyle={{height: 50}}
-                  type="clear"
-                  onPress={enableEditMode}
-                />
-              </View>
+              <DeleteModal
+                isOpen={showDeleteModal}
+                onDelete={deleteClient}
+                onCancel={cancelDeleteClient}
+              />
             </View>
-          )}
-          {isEditMode && (
-            <View
-              style={{
-                flexDirection: 'row',
-                paddingVertical: 10,
-                paddingHorizontal: 10,
-              }}>
-              <View style={{marginRight: 20}}>
-                <Button
-                  buttonStyle={{height: 50}}
-                  type="solid"
-                  title={'Save changes'}
-                  titleStyle={{fontSize: 20}}
-                  onPress={saveChanges}
-                />
-              </View>
-              <View>
-                <Button
-                  type="outline"
-                  title={'Cancel changes'}
-                  buttonStyle={{
-                    borderColor: '#d32f2f',
-                    height: 50,
-                  }}
-                  titleStyle={{color: '#d32f2f', fontSize: 20}}
-                  onPress={cancelChanges}
-                />
-              </View>
-            </View>
-          )}
-        </View>
-        <View style={{marginTop: 40}}>
-          <Input
-            inputStyle={{fontSize: 20}}
-            placeholder="Enter firstname"
-            value={firstName}
-            onChangeText={onFirstNameChange}
-            disabled={!isEditMode}
-          />
-          <Input
-            inputStyle={{fontSize: 20}}
-            placeholder="Enter lastname"
-            value={lastName}
-            onChangeText={onLastNameChange}
-            disabled={!isEditMode}
-          />
-          <Input
-            inputStyle={{fontSize: 20}}
-            placeholder="Enter extra notes"
-            value={extraNotes}
-            onChangeText={onExtraNotesChange}
-            multiline={true}
-            numberOfLines={10}
-            disabled={!isEditMode}
-          />
-        </View>
-        <DeleteModal
-          isOpen={showDeleteModal}
-          onDelete={deleteClient}
-          onCancel={cancelDeleteClient}
-        />
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
       </RootSiblingParent>
     </SafeAreaProvider>
   );
