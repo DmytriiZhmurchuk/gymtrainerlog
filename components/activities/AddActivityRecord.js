@@ -1,5 +1,12 @@
 import React, {useState, useRef} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  KeyboardAvoidingView,
+  Keyboard,
+} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import Input from '../widgets/Input';
 import {RootSiblingParent} from 'react-native-root-siblings';
@@ -59,53 +66,60 @@ const AddActivityRecord = props => {
 
   return (
     <RootSiblingParent>
-      <View style={styles.container}>
-        <View style={{flexGrow: 1}}>
-          <View style={styles.margin20}>
-            <Text style={styles.inputLabel}>Title:</Text>
-            <Input
-              placeholder="Enter title e.g. Jumping for time"
-              onChangeText={onTitleChange}
-            />
-          </View>
+      <KeyboardAvoidingView style={styles.container} behavior={'padding'}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{flex: 1}}>
+            <View style={{flexGrow: 1}}>
+              <View style={styles.margin20}>
+                <Text style={styles.inputLabel}>Title:</Text>
+                <Input
+                  placeholder="Enter title e.g. Jumping for time"
+                  onChangeText={onTitleChange}
+                />
+              </View>
 
-          <View style={styles.margin20}>
-            <Text style={styles.inputLabel}>Count:</Text>
-            <Input
-              placeholder="Enter number of repeating"
-              onChangeText={onCountChange}
-            />
-          </View>
+              <View style={styles.margin20}>
+                <Text style={styles.inputLabel}>Count:</Text>
+                <Input
+                  placeholder="Enter number of repeating"
+                  onChangeText={onCountChange}
+                />
+              </View>
 
-          <View style={styles.margin20}>
-            <Text style={styles.inputLabel}>Weight:</Text>
-            <Input placeholder="Enter Weight" onChangeText={onWeightChange} />
-          </View>
+              <View style={styles.margin20}>
+                <Text style={styles.inputLabel}>Weight:</Text>
+                <Input
+                  placeholder="Enter Weight"
+                  onChangeText={onWeightChange}
+                />
+              </View>
 
-          <View style={styles.margin20}>
-            <Text style={styles.inputLabel}>Enter time:</Text>
-            <Input placeholder="Enter Time" onChangeText={onTimeChange} />
+              <View style={styles.margin20}>
+                <Text style={styles.inputLabel}>Enter time:</Text>
+                <Input placeholder="Enter Time" onChangeText={onTimeChange} />
+              </View>
+            </View>
+            <View style={{...styles.row, marginBottom: 50}}>
+              <Button
+                title="Save"
+                icon={<EvilIcon name="check" size={30} color="white" />}
+                buttonStyle={{height: 50}}
+                onPress={handleSave}
+                containerStyle={{flex: 1, marginRight: 2.5}}
+              />
+              <Button
+                title="Cancel"
+                type="outline"
+                icon={<EvilIcon name="close-o" size={30} color="#d32f2f" />}
+                buttonStyle={{height: 50}}
+                titleStyle={{color: '#d32f2f'}}
+                onPress={handleCancel}
+                containerStyle={{flex: 1, marginLeft: 2.5}}
+              />
+            </View>
           </View>
-        </View>
-        <View style={styles.row}>
-          <Button
-            title="Save"
-            icon={<EvilIcon name="check" size={30} color="white" />}
-            buttonStyle={{height: 50}}
-            onPress={handleSave}
-            containerStyle={{flex: 1, marginRight: 2.5}}
-          />
-          <Button
-            title="Cancel"
-            type="outline"
-            icon={<EvilIcon name="close-o" size={30} color="#d32f2f" />}
-            buttonStyle={{height: 50}}
-            titleStyle={{color: '#d32f2f'}}
-            onPress={handleCancel}
-            containerStyle={{flex: 1, marginLeft: 2.5}}
-          />
-        </View>
-      </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </RootSiblingParent>
   );
 };
@@ -129,9 +143,8 @@ const styles = StyleSheet.create({
   },
   container: {
     paddingHorizontal: 10,
-    paddingTop: 40,
+    paddingTop: 10,
     flex: 1,
-    paddingBottom: 60,
   },
   inputLabel: {
     color: '#9e9e9e',

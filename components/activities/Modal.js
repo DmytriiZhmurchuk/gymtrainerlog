@@ -1,5 +1,12 @@
-import React, {useState} from 'react';
-import {View, StyleSheet, Modal} from 'react-native';
+import React from 'react';
+import {
+  View,
+  StyleSheet,
+  Modal,
+  TouchableWithoutFeedback,
+  KeyboardAvoidingView,
+  Keyboard,
+} from 'react-native';
 import {Button, Input} from 'react-native-elements';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
 
@@ -11,34 +18,38 @@ const LogModal = ({isOpen, onCancel, onChangeText, onSave, value}) => {
         transparent={true}
         visible={isOpen}
         onRequestClose={onCancel}>
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Input
-              label="Enter log name"
-              placeholder="e.g Leg day"
-              defaultValue={value}
-              onChangeText={onChangeText}
-            />
-            <View style={styles.row}>
-              <Button
-                title="Save"
-                icon={<EvilIcon name="check" size={30} color="white" />}
-                buttonStyle={{height: 50}}
-                onPress={onSave}
-                containerStyle={{flex: 1, marginRight: 2.5}}
-              />
-              <Button
-                title="Cancel"
-                type="outline"
-                icon={<EvilIcon name="close-o" size={30} color="#d32f2f" />}
-                buttonStyle={{height: 50}}
-                titleStyle={{color: '#d32f2f'}}
-                onPress={onCancel}
-                containerStyle={{flex: 1, marginLeft: 2.5}}
-              />
+        <KeyboardAvoidingView style={{flex: 1}} behavior={'padding'}>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <Input
+                  label="Enter log name"
+                  placeholder="e.g Leg day"
+                  defaultValue={value}
+                  onChangeText={onChangeText}
+                />
+                <View style={styles.row}>
+                  <Button
+                    title="Save"
+                    icon={<EvilIcon name="check" size={30} color="white" />}
+                    buttonStyle={{height: 50}}
+                    onPress={onSave}
+                    containerStyle={{flex: 1, marginRight: 2.5}}
+                  />
+                  <Button
+                    title="Cancel"
+                    type="outline"
+                    icon={<EvilIcon name="close-o" size={30} color="#d32f2f" />}
+                    buttonStyle={{height: 50}}
+                    titleStyle={{color: '#d32f2f'}}
+                    onPress={onCancel}
+                    containerStyle={{flex: 1, marginLeft: 2.5}}
+                  />
+                </View>
+              </View>
             </View>
-          </View>
-        </View>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
