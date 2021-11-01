@@ -44,10 +44,17 @@ const ClientsList = props => {
         listState.startIndex,
         search,
       );
-      if (count > listState.data.length) {
+      const len = listState.data.length + data.length;
+
+      if (count > len) {
         setListState({
           ...listState,
-          startIndex: listState.startIndex + listState.limit,
+          startIndex: len,
+          data: listState.data.concat(data),
+        });
+      } else if (count === len) {
+        setListState({
+          ...listState,
           data: listState.data.concat(data),
         });
       }
@@ -58,16 +65,20 @@ const ClientsList = props => {
 
   const resetClientList = async () => {
     try {
-      setIsRefresh(true);
       setSearch(undefined);
 
       const db = await openDBConnection();
-      const {data} = await getAllClients(db, listState.limit, 0, search);
+      const {data, count} = await getAllClients(db, listState.limit, 0);
+
+      let startIdx = 0;
+      if (count > data.length) {
+        startIdx = listState.limit;
+      }
 
       setListState({
         ...listState,
-        startIndex: listState.limit + 1,
-        data,
+        startIndex: startIdx,
+        data: data,
       });
 
       setIsRefresh(false);
@@ -243,7 +254,10 @@ const ClientsList = props => {
               }}
               extraData={listState}
               ListEmptyComponent={renderEmptyList}
-              onRefresh={resetClientList}
+              onRefresh={() => {
+                setIsRefresh(true);
+                resetClientList();
+              }}
               refreshing={isRefresh}
             />
             <View

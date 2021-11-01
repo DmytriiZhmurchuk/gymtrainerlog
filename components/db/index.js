@@ -129,9 +129,9 @@ export const getLogsByClientId = async (clientId, pageSize, startIndex, db) => {
   return new Promise(async (resolve, reject) => {
     const query =
       'SELECT * FROM Logs WHERE clientId=? ORDER BY date DESC LIMIT ? OFFSET ?';
-    const count = 'SELECT COUNT(*) FROM Clients';
+    const count = 'SELECT COUNT(*) FROM Logs WHERE clientId=?';
     const result = await db.executeSql(query, [clientId, pageSize, startIndex]);
-    const countResult = await db.executeSql(count);
+    const countResult = await db.executeSql(count, [clientId]);
     const rows = result[0].rows;
     const data = [];
 
@@ -153,9 +153,21 @@ export const getLogRecordsByLogId = async (
   startIndex = 0,
   db,
 ) => {
-  const query =
-    'SELECT * FROM LogActivities WHERE logId=? ORDER BY date DESC LIMIT ? OFFSET ?';
-  return db.executeSql(query, [logId, pageSize, startIndex]);
+  return new Promise(async (resolve, reject) => {
+    const query =
+      'SELECT * FROM LogActivities WHERE logId=? ORDER BY date DESC LIMIT ? OFFSET ?';
+    const count = 'SELECT COUNT(*) FROM LogActivities WHERE logId=?';
+
+    const results = await db.executeSql(query, [logId, pageSize, startIndex]);
+    const countResult = await db.executeSql(count, [logId]);
+
+    var data = [];
+    for (let i = 0; i < results[0].rows.length; ++i) {
+      data.push(results[0].rows.item(i));
+    }
+
+    resolve({data, count: countResult[0].rows.item(0)['COUNT(*)']});
+  });
 };
 
 export const deleteLogRecord = async (id, db) => {

@@ -90,10 +90,18 @@ const ActivitiesList = props => {
         listState.startIndex,
         db,
       );
-      if (count > listState.data.length) {
+
+      const len = listState.data.length + data.length;
+
+      if (count > len) {
         setListState({
           ...listState,
-          startIndex: listState.startIndex + listState.limit,
+          startIndex: len,
+          data: listState.data.concat(data),
+        });
+      } else if (count === len) {
+        setListState({
+          ...listState,
           data: listState.data.concat(data),
         });
       }
@@ -103,20 +111,23 @@ const ActivitiesList = props => {
   };
 
   const onRefresh = async () => {
-    setIsRefresh(true);
     setSearch(undefined);
     try {
       const db = await openDBConnection();
-      const {data} = await getLogsByClientId(
+      const {data, count} = await getLogsByClientId(
         props.clientId,
         listState.limit,
         0,
         db,
       );
+      let startIdx = 0;
+      if (count > data.length) {
+        startIdx = listState.limit;
+      }
 
       setListState({
         ...listState,
-        startIndex: listState.limit + 1,
+        startIndex: startIdx,
         data: data,
       });
 
@@ -214,20 +225,11 @@ const ActivitiesList = props => {
     }
     try {
       const db = await openDBConnection();
-      const result = await createLog(
-        {title: logName, clientId: props.clientId},
-        db,
-      );
-      const newLog = await getLogById(result[0].insertId, db);
-      if (newLog[0].rows.length) {
-        setListState({
-          ...listState,
-          data: [newLog[0].rows.item(0)].concat(listState.data),
-        });
-      }
+      await createLog({title: logName, clientId: props.clientId}, db);
       setShowNewLogModal(false);
       setLogName('');
       showToast('Saved');
+      onRefresh();
     } catch (error) {
       showToast('DB error');
       setLogName('');
@@ -285,15 +287,18 @@ const ActivitiesList = props => {
               renderItem={renderItem}
               keyExtractor={item => item.id}
               onEndReachedThreshold={0.1}
-              initialNumToRender={10}
+              initialNumToRender={9}
               onEndReached={info => {
-                if (info.distanceFromEnd > 0 && !search) {
+                if (!search) {
                   fetchLogs();
                 }
               }}
               extraData={listState}
               ListEmptyComponent={renderEmptyList}
-              onRefresh={onRefresh}
+              onRefresh={() => {
+                setIsRefresh(true);
+                onRefresh();
+              }}
               refreshing={isRefresh}
             />
           </View>

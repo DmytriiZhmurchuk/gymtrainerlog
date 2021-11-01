@@ -26,7 +26,7 @@ const ActivityRecords = props => {
     setDeleteModal(true);
   };
 
-  onDeleteCancel = () => {
+  const onDeleteCancel = () => {
     setLogRecordId(null);
     setDeleteModal(false);
   };
@@ -37,6 +37,7 @@ const ActivityRecords = props => {
       await deleteLogRecord(logRecordID, db);
       setDeleteModal(false);
       refreshList();
+      showToast('Removed');
     } catch (error) {
       setDeleteModal(false);
       showToast('Db Error');
@@ -91,64 +92,50 @@ const ActivityRecords = props => {
   };
 
   const fetchLogRecords = async () => {
-    console.log(listState);
     try {
       const db = await openDBConnection();
-      const results = await getLogRecordsByLogId(
+      const {data, count} = await getLogRecordsByLogId(
         props.logId,
         listState.limit,
         listState.startIndex,
         db,
       );
+      const len = listState.data.length + data.length;
 
-      if (!results[0].rows.length) {
-        return;
+      if (count > len) {
+        setListState({
+          ...listState,
+          startIndex: len,
+          data: listState.data.concat(data),
+        });
+      } else if (count === len) {
+        setListState({
+          ...listState,
+          data: listState.data.concat(data),
+        });
       }
-
-      var temp = [];
-      for (let i = 0; i < results[0].rows.length; ++i) {
-        temp.push(results[0].rows.item(i));
-      }
-
-      setListState({
-        ...listState,
-        startIndex: listState.startIndex + listState.limit + 1,
-        data: listState.data.concat(temp),
-      });
     } catch (error) {
       showToast('DB error');
     }
   };
 
   const refreshList = async () => {
-    setIsRefresh(true);
     try {
       const db = await openDBConnection();
-      const results = await getLogRecordsByLogId(
+      const {data, count} = await getLogRecordsByLogId(
         props.logId,
         listState.limit,
         0,
         db,
       );
-
-      if (!results[0].rows.length) {
-        setIsRefresh(false);
-        setListState({
-          ...listState,
-          data: [],
-        });
-        return;
+      let startIdx = 0;
+      if (count > data.length) {
+        startIdx = listState.limit;
       }
-
-      var temp = [];
-      for (let i = 0; i < results[0].rows.length; ++i) {
-        temp.push(results[0].rows.item(i));
-      }
-
       setListState({
         ...listState,
-        startIndex: listState.limit + 1,
-        data: temp,
+        startIndex: startIdx,
+        data: data,
       });
       setIsRefresh(false);
     } catch (error) {
@@ -235,14 +222,13 @@ const ActivityRecords = props => {
               keyExtractor={item => item.id}
               onEndReachedThreshold={0.1}
               initialNumToRender={10}
-              onEndReached={info => {
-                if (info.distanceFromEnd > 0) {
-                  fetchLogRecords();
-                }
-              }}
+              onEndReached={fetchLogRecords}
               extraData={listState}
               ListEmptyComponent={renderEmptyList}
-              onRefresh={refreshList}
+              onRefresh={() => {
+                setIsRefresh(true);
+                refreshList();
+              }}
               refreshing={isRefresh}
             />
           </View>
