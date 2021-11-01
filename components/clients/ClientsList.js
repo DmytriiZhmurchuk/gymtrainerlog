@@ -1,12 +1,18 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet, FlatList} from 'react-native';
 import {Navigation} from 'react-native-navigation';
-import {getAllClients, openDBConnection, searchClients} from '../db';
+import {
+  getAllClients,
+  openDBConnection,
+  searchClients,
+  removeClient,
+} from '../db';
 import {showToast} from '../utils';
 import {RootSiblingParent} from 'react-native-root-siblings';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {ListItem, Avatar, SearchBar, Button} from 'react-native-elements';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
+import DeleteModal from '../widgets/DeleteModal';
 
 const ClientsList = props => {
   const [listState, setListState] = useState({
@@ -16,6 +22,32 @@ const ClientsList = props => {
   });
   const [search, setSearch] = useState();
   const [isRefresh, setIsRefresh] = useState(false);
+  const [clientId, setClientId] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const onCancelDelete = () => {
+    setClientId(null);
+    setShowDeleteModal(false);
+  };
+
+  const onRemove = async () => {
+    try {
+      const db = await openDBConnection();
+      await removeClient(clientId, db);
+      setShowDeleteModal(false);
+      showToast('Removed succesfully');
+      resetClientList();
+    } catch (error) {
+      setClientId(null);
+      setShowDeleteModal(false);
+      showToast('Failed to remove client');
+    }
+  };
+
+  const onDeletePress = id => {
+    setClientId(id);
+    setShowDeleteModal(true);
+  };
 
   const updateSearch = value => {
     setSearch(value);
@@ -153,6 +185,9 @@ const ClientsList = props => {
       <ListItem
         key={item.id}
         bottomDivider
+        onLongPress={() => {
+          onDeletePress(item.id);
+        }}
         onPress={() => {
           openLogs(item.id);
         }}>
@@ -271,6 +306,11 @@ const ClientsList = props => {
             </View>
           </View>
         </View>
+        <DeleteModal
+          isOpen={showDeleteModal}
+          onDelete={onRemove}
+          onCancel={onCancelDelete}
+        />
       </RootSiblingParent>
     </SafeAreaProvider>
   );
