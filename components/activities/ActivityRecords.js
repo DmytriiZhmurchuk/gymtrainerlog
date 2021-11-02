@@ -153,12 +153,12 @@ const ActivityRecords = props => {
           openRecord(item.id);
         }}>
         <ListItem.Content>
-          <ListItem.Title style={{fontSize: 20}}>{item.title}</ListItem.Title>
+          <ListItem.Title>{item.title}</ListItem.Title>
           <ListItem.Subtitle>{item.date}</ListItem.Subtitle>
         </ListItem.Content>
         <IconMaterial
           name="delete-forever"
-          size={40}
+          size={20}
           color="#d32f2f"
           onPress={() => {
             onDelete(item.id);
@@ -172,13 +172,12 @@ const ActivityRecords = props => {
     return (
       <View
         style={{
-          marginTop: '50%',
+          flex: 1,
           justifyContent: 'center',
           alignItems: 'center',
         }}>
-        <Text style={{fontSize: 16}}>
-          There are no items. Please press New record
-        </Text>
+        <Text style={{fontSize: 16}}>There are no items.</Text>
+        <Text style={{fontSize: 16}}>Please press add new record</Text>
       </View>
     );
   };
@@ -217,6 +216,7 @@ const ActivityRecords = props => {
         <View style={styles.container}>
           <View style={{flex: 1}}>
             <FlatList
+              contentContainerStyle={{flexGrow: 1}}
               data={listState.data}
               renderItem={renderItem}
               keyExtractor={item => item.id}

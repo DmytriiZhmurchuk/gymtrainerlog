@@ -152,7 +152,7 @@ const EditActivityRecord = props => {
                           icon={
                             <IconMaterial
                               name="mode-edit"
-                              size={30}
+                              size={20}
                               color="#2196F3"
                             />
                           }
@@ -165,7 +165,7 @@ const EditActivityRecord = props => {
                           icon={
                             <IconMaterial
                               name="delete-outline"
-                              size={30}
+                              size={20}
                               color="#d32f2f"
                               onPress={onDelete}
                             />

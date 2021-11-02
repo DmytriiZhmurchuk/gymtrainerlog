@@ -117,21 +117,26 @@ const EditClient = props => {
   return (
     <SafeAreaProvider>
       <RootSiblingParent>
-        <KeyboardAvoidingView behavior={'position'} style={{flex: 1}}>
+        <KeyboardAvoidingView
+          behavior={'height'}
+          style={{flex: 1}}
+          contentContainerStyle={{flex: 1}}>
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View>
+            <View style={{flexGrow: 1}}>
               <View style={styles.container}>
                 <Avatar
                   rounded
-                  size="xlarge"
+                  size="large"
                   icon={{name: 'user', type: 'font-awesome'}}
-                  onPress={() => console.log('Works!')}
                   activeOpacity={0.7}
                   overlayContainerStyle={{backgroundColor: '#eeeeee'}}
                 />
                 <View>
                   <Text
-                    style={{fontSize: 20}}>{`${firstName} ${lastName}`}</Text>
+                    style={{
+                      fontSize: 16,
+                      marginTop: 10,
+                    }}>{`${firstName} ${lastName}`}</Text>
                 </View>
                 {!isEditMode && (
                   <View style={styles.row}>
@@ -140,7 +145,7 @@ const EditClient = props => {
                         icon={
                           <IconMaterial
                             name="delete-outline"
-                            size={30}
+                            size={20}
                             color="#d32f2f"
                             onPress={() => {
                               setShowDeleteModal(true);
@@ -156,7 +161,7 @@ const EditClient = props => {
                         icon={
                           <IconMaterial
                             name="mode-edit"
-                            size={30}
+                            size={20}
                             color="#2196F3"
                           />
                         }
@@ -167,54 +172,24 @@ const EditClient = props => {
                     </View>
                   </View>
                 )}
-                {isEditMode && (
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      paddingVertical: 10,
-                      paddingHorizontal: 10,
-                    }}>
-                    <View style={{marginRight: 20}}>
-                      <Button
-                        buttonStyle={{height: 50}}
-                        type="solid"
-                        title={'Save changes'}
-                        titleStyle={{fontSize: 20}}
-                        onPress={saveChanges}
-                      />
-                    </View>
-                    <View>
-                      <Button
-                        type="outline"
-                        title={'Cancel changes'}
-                        buttonStyle={{
-                          borderColor: '#d32f2f',
-                          height: 50,
-                        }}
-                        titleStyle={{color: '#d32f2f', fontSize: 20}}
-                        onPress={cancelChanges}
-                      />
-                    </View>
-                  </View>
-                )}
               </View>
-              <View style={{marginTop: 40}}>
+              <View style={{flexGrow: 1}}>
                 <Input
-                  inputStyle={{fontSize: 20}}
+                  inputStyle={{fontSize: 16}}
                   placeholder="Enter firstname"
                   value={firstName}
                   onChangeText={onFirstNameChange}
                   disabled={!isEditMode}
                 />
                 <Input
-                  inputStyle={{fontSize: 20}}
+                  inputStyle={{fontSize: 16}}
                   placeholder="Enter lastname"
                   value={lastName}
                   onChangeText={onLastNameChange}
                   disabled={!isEditMode}
                 />
                 <Input
-                  inputStyle={{fontSize: 20}}
+                  inputStyle={{fontSize: 16}}
                   placeholder="Enter extra notes"
                   value={extraNotes}
                   onChangeText={onExtraNotesChange}
@@ -223,6 +198,38 @@ const EditClient = props => {
                   disabled={!isEditMode}
                 />
               </View>
+              {isEditMode && (
+                <View
+                  style={{
+                    marginTop: 50,
+                    flexDirection: 'row',
+                    paddingBottom: 60,
+                    justifyContent: 'center',
+                  }}>
+                  <View style={{marginRight: 20}}>
+                    <Button
+                      buttonStyle={{height: 50}}
+                      type="solid"
+                      title={'Save changes'}
+                      titleStyle={{fontSize: 16}}
+                      onPress={saveChanges}
+                    />
+                  </View>
+                  <View>
+                    <Button
+                      type="outline"
+                      title={'Cancel changes'}
+                      buttonStyle={{
+                        borderColor: '#d32f2f',
+                        height: 50,
+                      }}
+                      titleStyle={{color: '#d32f2f', fontSize: 16}}
+                      onPress={cancelChanges}
+                    />
+                  </View>
+                </View>
+              )}
+
               <DeleteModal
                 isOpen={showDeleteModal}
                 onDelete={deleteClient}
