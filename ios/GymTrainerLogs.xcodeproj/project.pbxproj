@@ -12,6 +12,8 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		189FEF6E8B6FE01269E47F73 /* libPods-GymTrainerLogs-GymTrainerLogsTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3706029D6946A4D56DF7E5F9 /* libPods-GymTrainerLogs-GymTrainerLogsTests.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		850791DE2731CCB300885A7D /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		850791DF2731CCB400885A7D /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		CC807CED77DA3299C9D2BD5E /* libPods-GymTrainerLogs.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B0C83228BA4036D4005BC62 /* libPods-GymTrainerLogs.a */; };
 /* End PBXBuildFile section */
 
@@ -276,6 +278,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				850791DF2731CCB400885A7D /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -284,6 +287,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
+				850791DE2731CCB300885A7D /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -523,7 +527,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 9884C31F57D715C49DEFE375 /* Pods-GymTrainerLogs.debug.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppLogoIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = T6UWK97FBH;
@@ -550,7 +555,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AED578D3DD3060FF697B19DC /* Pods-GymTrainerLogs.release.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppLogoIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = T6UWK97FBH;
