@@ -9,12 +9,12 @@ import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import IconMaterial from 'react-native-vector-icons/MaterialIcons';
 import LogModal from './Modal';
 import DeleteModal from '../widgets/DeleteModal';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 import {
   createLog,
   openDBConnection,
   getLogsByClientId,
-  getLogById,
   updateLog,
   deleteLog,
   searchLogs,
@@ -180,6 +180,12 @@ const ActivitiesList = props => {
         key={item.id}
         bottomDivider
         onLongPress={() => {
+          const options = {
+            enableVibrateFallback: true,
+            ignoreAndroidSystemSettings: false,
+          };
+
+          ReactNativeHapticFeedback.trigger('impactHeavy', options);
           setLogId(item.id);
           setShowDeleteLogModal(true);
         }}

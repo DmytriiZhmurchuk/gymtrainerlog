@@ -176,19 +176,19 @@ const EditActivityRecord = props => {
                     </View>
                     <Card.Divider />
                     <View style={{marginTop: 40, marginBottom: 20}}>
-                      <Text h4>Title:</Text>
+                      <Text style={{color: '#9e9e9e'}}>Title:</Text>
                       <Text style={{fontSize: 20}}>{title}</Text>
                     </View>
                     <View style={styles.margin20}>
-                      <Text h4>Count:</Text>
+                      <Text style={{color: '#9e9e9e'}}>Count:</Text>
                       <Text style={{fontSize: 20}}>{count}</Text>
                     </View>
                     <View style={styles.margin20}>
-                      <Text h4>Weight:</Text>
+                      <Text style={{color: '#9e9e9e'}}>Weight:</Text>
                       <Text style={{fontSize: 20}}>{weight}</Text>
                     </View>
                     <View style={styles.margin20}>
-                      <Text h4>Time:</Text>
+                      <Text style={{color: '#9e9e9e'}}>Time:</Text>
                       <Text style={{fontSize: 20}}>{time}</Text>
                     </View>
                   </Card>
