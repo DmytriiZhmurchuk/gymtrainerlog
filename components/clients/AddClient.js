@@ -3,9 +3,8 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableWithoutFeedback,
   KeyboardAvoidingView,
-  Keyboard,
+  ScrollView,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import Input from '../widgets/Input';
@@ -80,57 +79,55 @@ const AddClient = props => {
   }, [props.componentId]);
 
   return (
-    <RootSiblingParent>
-      <KeyboardAvoidingView style={styles.container} behavior={'padding'}>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={{flex: 1}}>
-            <View style={{flexGrow: 0.8}}>
-              <View style={styles.firstName}>
-                <Text style={styles.inputLabel}>First name:</Text>
-                <Input
-                  placeholder="Enter first name"
-                  onChangeText={onFirstNameChange}
-                />
-              </View>
-              <View style={styles.lastName}>
-                <Text style={styles.inputLabel}>Last name:</Text>
-                <Input
-                  placeholder="Enter last name"
-                  onChangeText={onLastNameChange}
-                />
-              </View>
-              <View style={styles.notes}>
-                <Text style={styles.inputLabel}>Additional Notes:</Text>
-                <TextArea
-                  placeholder="Enter additional notes"
-                  multiline={true}
-                  numberOfLines={10}
-                  onChangeText={onExtraNotesChange}
-                />
-              </View>
-            </View>
-            <View style={styles.row}>
-              <Button
-                title="Save"
-                icon={<EvilIcon name="check" size={30} color="white" />}
-                buttonStyle={{height: 50}}
-                onPress={handleSave}
-                containerStyle={{flex: 1, marginRight: 2.5}}
-              />
-              <Button
-                title="Cancel"
-                type="outline"
-                icon={<EvilIcon name="close-o" size={30} color="#d32f2f" />}
-                buttonStyle={{height: 50}}
-                titleStyle={{color: '#d32f2f'}}
-                onPress={handleCancel}
-                containerStyle={{flex: 1, marginLeft: 2.5}}
-              />
-            </View>
+    <KeyboardAvoidingView
+      style={{flex: 1, paddingHorizontal: 10, paddingTop: 20}}
+      behavior={'padding'}>
+      <RootSiblingParent>
+        <ScrollView>
+          <View style={styles.firstName}>
+            <Text style={styles.inputLabel}>First name:</Text>
+            <Input
+              placeholder="Enter first name"
+              onChangeText={onFirstNameChange}
+            />
           </View>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
-    </RootSiblingParent>
+          <View style={styles.lastName}>
+            <Text style={styles.inputLabel}>Last name:</Text>
+            <Input
+              placeholder="Enter last name"
+              onChangeText={onLastNameChange}
+            />
+          </View>
+          <View style={styles.notes}>
+            <Text style={styles.inputLabel}>Additional Notes:</Text>
+            <TextArea
+              placeholder="Enter additional notes"
+              multiline={true}
+              numberOfLines={10}
+              onChangeText={onExtraNotesChange}
+            />
+          </View>
+          <View style={styles.row}>
+            <Button
+              title="Save"
+              icon={<EvilIcon name="check" size={30} color="white" />}
+              buttonStyle={{height: 50}}
+              onPress={handleSave}
+              containerStyle={{flex: 1, marginRight: 2.5}}
+            />
+            <Button
+              title="Cancel"
+              type="outline"
+              icon={<EvilIcon name="close-o" size={30} color="#d32f2f" />}
+              buttonStyle={{height: 50}}
+              titleStyle={{color: '#d32f2f'}}
+              onPress={handleCancel}
+              containerStyle={{flex: 1, marginLeft: 2.5}}
+            />
+          </View>
+        </ScrollView>
+      </RootSiblingParent>
+    </KeyboardAvoidingView>
   );
 };
 

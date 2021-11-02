@@ -3,9 +3,8 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableWithoutFeedback,
   KeyboardAvoidingView,
-  Keyboard,
+  ScrollView,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import Input from '../widgets/Input';
@@ -65,62 +64,55 @@ const AddActivityRecord = props => {
   };
 
   return (
-    <RootSiblingParent>
-      <KeyboardAvoidingView style={styles.container} behavior={'padding'}>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={{flex: 1}}>
-            <View style={{flexGrow: 1}}>
-              <View style={styles.margin20}>
-                <Text style={styles.inputLabel}>Title:</Text>
-                <Input
-                  placeholder="Enter title e.g. Jumping for time"
-                  onChangeText={onTitleChange}
-                />
-              </View>
-
-              <View style={styles.margin20}>
-                <Text style={styles.inputLabel}>Count:</Text>
-                <Input
-                  placeholder="Enter number of repeating"
-                  onChangeText={onCountChange}
-                />
-              </View>
-
-              <View style={styles.margin20}>
-                <Text style={styles.inputLabel}>Weight:</Text>
-                <Input
-                  placeholder="Enter Weight"
-                  onChangeText={onWeightChange}
-                />
-              </View>
-
-              <View style={styles.margin20}>
-                <Text style={styles.inputLabel}>Enter time:</Text>
-                <Input placeholder="Enter Time" onChangeText={onTimeChange} />
-              </View>
-            </View>
-            <View style={{...styles.row, marginBottom: 50}}>
-              <Button
-                title="Save"
-                icon={<EvilIcon name="check" size={30} color="white" />}
-                buttonStyle={{height: 50}}
-                onPress={handleSave}
-                containerStyle={{flex: 1, marginRight: 2.5}}
-              />
-              <Button
-                title="Cancel"
-                type="outline"
-                icon={<EvilIcon name="close-o" size={30} color="#d32f2f" />}
-                buttonStyle={{height: 50}}
-                titleStyle={{color: '#d32f2f'}}
-                onPress={handleCancel}
-                containerStyle={{flex: 1, marginLeft: 2.5}}
-              />
-            </View>
+    <KeyboardAvoidingView
+      style={{flex: 1, paddingHorizontal: 10, paddingTop: 20}}
+      behavior={'padding'}
+      keyboardVerticalOffset={80}>
+      <RootSiblingParent>
+        <ScrollView>
+          <View style={styles.margin20}>
+            <Text style={styles.inputLabel}>Title:</Text>
+            <Input
+              placeholder="Enter title e.g. Jumping for time"
+              onChangeText={onTitleChange}
+            />
           </View>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
-    </RootSiblingParent>
+          <View style={styles.margin20}>
+            <Text style={styles.inputLabel}>Count:</Text>
+            <Input
+              placeholder="Enter number of repeating"
+              onChangeText={onCountChange}
+            />
+          </View>
+          <View style={styles.margin20}>
+            <Text style={styles.inputLabel}>Weight:</Text>
+            <Input placeholder="Enter Weight" onChangeText={onWeightChange} />
+          </View>
+          <View style={styles.margin20}>
+            <Text style={styles.inputLabel}>Enter time:</Text>
+            <Input placeholder="Enter Time" onChangeText={onTimeChange} />
+          </View>
+          <View style={{...styles.row, ...styles.margin20}}>
+            <Button
+              title="Save"
+              icon={<EvilIcon name="check" size={30} color="white" />}
+              buttonStyle={{height: 50}}
+              onPress={handleSave}
+              containerStyle={{flex: 1, marginRight: 2.5}}
+            />
+            <Button
+              title="Cancel"
+              type="outline"
+              icon={<EvilIcon name="close-o" size={30} color="#d32f2f" />}
+              buttonStyle={{height: 50}}
+              titleStyle={{color: '#d32f2f'}}
+              onPress={handleCancel}
+              containerStyle={{flex: 1, marginLeft: 2.5}}
+            />
+          </View>
+        </ScrollView>
+      </RootSiblingParent>
+    </KeyboardAvoidingView>
   );
 };
 
