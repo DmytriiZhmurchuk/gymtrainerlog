@@ -13,6 +13,7 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {ListItem, Avatar, SearchBar, Button} from 'react-native-elements';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import DeleteModal from '../widgets/DeleteModal';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 const ClientsList = props => {
   const [listState, setListState] = useState({
@@ -186,6 +187,12 @@ const ClientsList = props => {
         key={item.id}
         bottomDivider
         onLongPress={() => {
+          const options = {
+            enableVibrateFallback: true,
+            ignoreAndroidSystemSettings: false,
+          };
+
+          ReactNativeHapticFeedback.trigger('impactHeavy', options);
           onDeletePress(item.id);
         }}
         onPress={() => {
