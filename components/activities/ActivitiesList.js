@@ -194,7 +194,7 @@ const ActivitiesList = props => {
         }}>
         <IconMaterial
           name="mode-edit"
-          size={30}
+          size={20}
           color="#2196F3"
           onPress={() => {
             setLogId(item.id);
@@ -202,10 +202,10 @@ const ActivitiesList = props => {
           }}
         />
         <ListItem.Content>
-          <ListItem.Title style={{fontSize: 20}}>{item.title}</ListItem.Title>
+          <ListItem.Title>{item.title}</ListItem.Title>
           <ListItem.Subtitle>{item.date}</ListItem.Subtitle>
         </ListItem.Content>
-        <ListItem.Chevron size={30} />
+        <ListItem.Chevron size={20} />
       </ListItem>
     );
   };
@@ -214,13 +214,12 @@ const ActivitiesList = props => {
     return (
       <View
         style={{
-          marginTop: '50%',
+          flex: 1,
           justifyContent: 'center',
           alignItems: 'center',
         }}>
-        <Text style={{fontSize: 16}}>
-          There are no items. Please press New log
-        </Text>
+        <Text style={{fontSize: 16}}>There are no items.</Text>
+        <Text style={{fontSize: 16}}>Please press add new log</Text>
       </View>
     );
   };
@@ -289,6 +288,9 @@ const ActivitiesList = props => {
           </View>
           <View style={{flex: 1}}>
             <FlatList
+              contentContainerStyle={{
+                flexGrow: 1,
+              }}
               data={listState.data}
               renderItem={renderItem}
               keyExtractor={item => item.id}
