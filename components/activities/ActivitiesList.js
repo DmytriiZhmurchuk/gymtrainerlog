@@ -4,12 +4,18 @@ import {Navigation} from 'react-native-navigation';
 import {showToast} from '../utils';
 import {RootSiblingParent} from 'react-native-root-siblings';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {ListItem, SearchBar, Button} from 'react-native-elements';
+import {
+  ListItem,
+  SearchBar,
+  Button,
+  LinearProgress,
+} from 'react-native-elements';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import IconMaterial from 'react-native-vector-icons/MaterialIcons';
 import LogModal from './Modal';
 import DeleteModal from '../widgets/DeleteModal';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import Loading from '../widgets/Loading';
 
 import {
   createLog,
@@ -29,6 +35,7 @@ const ActivitiesList = props => {
   const [logId, setLogId] = useState();
   const [showEditModal, setEditModal] = useState(false);
   const [isRefresh, setIsRefresh] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [listState, setListState] = useState({
     data: [],
@@ -247,15 +254,18 @@ const ActivitiesList = props => {
   };
 
   useEffect(() => {
-    const navigationEventListener = Navigation.events().bindComponent({
-      props: {componentId: props.componentId},
-      componentWillAppear() {
-        fetchLogs();
-      },
-    });
-
+    setIsLoading(true);
+    const screenEventListener =
+      Navigation.events().registerComponentDidAppearListener(
+        ({componentId, componentName}) => {
+          if (componentName === 'com.gymtrainerlog.ActivitiesList') {
+            onRefresh();
+            setIsLoading(false);
+          }
+        },
+      );
     return () => {
-      navigationEventListener.remove();
+      screenEventListener.remove();
     };
   }, [props.componentId]);
 
@@ -273,6 +283,10 @@ const ActivitiesList = props => {
 
     return () => clearTimeout(delayDebounceFn);
   }, [search]);
+
+  if (isLoading) {
+    return <Loading />;
+  }
 
   return (
     <SafeAreaProvider>

@@ -14,6 +14,7 @@ import {ListItem, Avatar, SearchBar, Button} from 'react-native-elements';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import DeleteModal from '../widgets/DeleteModal';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import Loading from '../widgets/Loading';
 
 const ClientsList = props => {
   const [listState, setListState] = useState({
@@ -25,6 +26,7 @@ const ClientsList = props => {
   const [isRefresh, setIsRefresh] = useState(false);
   const [clientId, setClientId] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const onCancelDelete = () => {
     setClientId(null);
@@ -232,12 +234,7 @@ const ClientsList = props => {
   };
 
   useEffect(() => {
-    const navigationEventListener = Navigation.events().bindComponent({
-      props: {componentId: props.componentId},
-      componentWillAppear() {
-        resetClientList();
-      },
-    });
+    setIsLoading(true);
 
     Navigation.mergeOptions(props.componentId, {
       topBar: {
@@ -245,8 +242,18 @@ const ClientsList = props => {
       },
     });
 
+    const screenEventListener =
+      Navigation.events().registerComponentDidAppearListener(
+        ({componentId, componentName}) => {
+          if (componentName === 'com.gymtrainerlog.HomeScreen') {
+            resetClientList();
+            setIsLoading(false);
+          }
+        },
+      );
+
     return () => {
-      navigationEventListener.remove();
+      screenEventListener.remove();
     };
   }, [props.componentId]);
 
@@ -264,6 +271,10 @@ const ClientsList = props => {
 
     return () => clearTimeout(delayDebounceFn);
   }, [search]);
+
+  if (isLoading) {
+    return <Loading />;
+  }
 
   return (
     <SafeAreaProvider>
