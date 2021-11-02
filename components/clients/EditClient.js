@@ -82,15 +82,15 @@ const EditClient = props => {
   };
 
   const onFirstNameChange = value => {
-    setFirstName(value.trim());
+    setFirstName(value);
   };
 
   const onLastNameChange = value => {
-    setLastName(value.trim());
+    setLastName(value);
   };
 
   const onExtraNotesChange = value => {
-    setExtraNotes(value.trim());
+    setExtraNotes(value);
   };
 
   const deleteClient = async () => {
