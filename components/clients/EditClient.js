@@ -6,6 +6,7 @@ import {
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
   Keyboard,
+  ScrollView,
 } from 'react-native';
 import {
   getClientById,
@@ -115,131 +116,109 @@ const EditClient = props => {
     }
   }, [isEditMode]);
   return (
-    <SafeAreaProvider>
-      <RootSiblingParent>
-        <KeyboardAvoidingView
-          behavior={'height'}
-          style={{flex: 1}}
-          contentContainerStyle={{flex: 1}}>
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={{flexGrow: 1}}>
-              <View style={styles.container}>
-                <Avatar
-                  rounded
-                  size="large"
-                  icon={{name: 'user', type: 'font-awesome'}}
-                  activeOpacity={0.7}
-                  overlayContainerStyle={{backgroundColor: '#eeeeee'}}
-                />
-                <View>
-                  <Text
-                    style={{
-                      fontSize: 16,
-                      marginTop: 10,
-                    }}>{`${firstName} ${lastName}`}</Text>
-                </View>
-                {!isEditMode && (
-                  <View style={styles.row}>
-                    <View>
-                      <Button
-                        icon={
-                          <IconMaterial
-                            name="delete-outline"
-                            size={20}
-                            color="#d32f2f"
-                            onPress={() => {
-                              setShowDeleteModal(true);
-                            }}
-                          />
-                        }
-                        buttonStyle={{borderColor: '#d32f2f', height: 50}}
-                        type="clear"
-                      />
-                    </View>
-                    <View style={{marginLeft: 20}}>
-                      <Button
-                        icon={
-                          <IconMaterial
-                            name="mode-edit"
-                            size={20}
-                            color="#2196F3"
-                          />
-                        }
-                        buttonStyle={{height: 50}}
-                        type="clear"
-                        onPress={enableEditMode}
-                      />
-                    </View>
-                  </View>
-                )}
-              </View>
-              <View style={{flexGrow: 1}}>
-                <Input
-                  inputStyle={{fontSize: 16}}
-                  placeholder="Enter firstname"
-                  value={firstName}
-                  onChangeText={onFirstNameChange}
-                  disabled={!isEditMode}
-                />
-                <Input
-                  inputStyle={{fontSize: 16}}
-                  placeholder="Enter lastname"
-                  value={lastName}
-                  onChangeText={onLastNameChange}
-                  disabled={!isEditMode}
-                />
-                <Input
-                  inputStyle={{fontSize: 16}}
-                  placeholder="Enter extra notes"
-                  value={extraNotes}
-                  onChangeText={onExtraNotesChange}
-                  multiline={true}
-                  numberOfLines={10}
-                  disabled={!isEditMode}
-                />
-              </View>
-              {isEditMode && (
-                <View
-                  style={{
-                    marginTop: 50,
-                    flexDirection: 'row',
-                    paddingBottom: 60,
-                    justifyContent: 'center',
-                  }}>
-                  <View style={{marginRight: 20}}>
-                    <Button
-                      buttonStyle={{height: 50}}
-                      type="solid"
-                      title={'Save changes'}
-                      titleStyle={{fontSize: 16}}
-                      onPress={saveChanges}
-                    />
-                  </View>
-                  <View>
-                    <Button
-                      type="outline"
-                      title={'Cancel changes'}
-                      buttonStyle={{
-                        borderColor: '#d32f2f',
-                        height: 50,
-                      }}
-                      titleStyle={{color: '#d32f2f', fontSize: 16}}
-                      onPress={cancelChanges}
-                    />
-                  </View>
-                </View>
-              )}
-
-              <DeleteModal
-                isOpen={showDeleteModal}
-                onDelete={deleteClient}
-                onCancel={cancelDeleteClient}
+    <KeyboardAvoidingView
+      behavior={'padding'}
+      style={{flex: 1, paddingTop: 20}}
+      contentContainerStyle={{flex: 1}}>
+      <SafeAreaProvider>
+        <RootSiblingParent>
+          <ScrollView>
+            <View style={{flexDirection: 'row', justifyContent: 'center'}}>
+              <Avatar
+                rounded
+                size="large"
+                icon={{name: 'user', type: 'font-awesome'}}
+                activeOpacity={0.7}
+                overlayContainerStyle={{backgroundColor: '#eeeeee'}}
               />
             </View>
-          </TouchableWithoutFeedback>
-        </KeyboardAvoidingView>
-      </RootSiblingParent>
-    </SafeAreaProvider>
+            <View style={{flexDirection: 'row', justifyContent: 'center'}}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  marginTop: 10,
+                }}>{`${firstName} ${lastName}`}</Text>
+            </View>
+            {!isEditMode && (
+              <View style={{flexDirection: 'row', justifyContent: 'center'}}>
+                <Button
+                  icon={
+                    <IconMaterial
+                      name="delete-outline"
+                      size={20}
+                      color="#d32f2f"
+                      onPress={() => {
+                        setShowDeleteModal(true);
+                      }}
+                    />
+                  }
+                  buttonStyle={{borderColor: '#d32f2f', height: 50}}
+                  type="clear"
+                />
+                <Button
+                  icon={
+                    <IconMaterial name="mode-edit" size={20} color="#2196F3" />
+                  }
+                  buttonStyle={{height: 50}}
+                  type="clear"
+                  onPress={enableEditMode}
+                />
+              </View>
+            )}
+            <Input
+              inputStyle={{fontSize: 16}}
+              placeholder="Enter firstname"
+              value={firstName}
+              onChangeText={onFirstNameChange}
+              disabled={!isEditMode}
+            />
+            <Input
+              inputStyle={{fontSize: 16}}
+              placeholder="Enter lastname"
+              value={lastName}
+              onChangeText={onLastNameChange}
+              disabled={!isEditMode}
+            />
+            <Input
+              inputStyle={{fontSize: 16}}
+              placeholder="Enter extra notes"
+              value={extraNotes}
+              onChangeText={onExtraNotesChange}
+              multiline={true}
+              numberOfLines={10}
+              disabled={!isEditMode}
+            />
+            {isEditMode && (
+              <View style={{flexDirection: 'row', justifyContent: 'center'}}>
+                <Button
+                  buttonStyle={{height: 50}}
+                  type="solid"
+                  title={'Save changes'}
+                  titleStyle={{fontSize: 16}}
+                  onPress={saveChanges}
+                />
+                <Button
+                  type="outline"
+                  title={'Cancel changes'}
+                  buttonStyle={{
+                    borderColor: '#d32f2f',
+                    height: 50,
+                    marginLeft: 20,
+                  }}
+                  titleStyle={{color: '#d32f2f', fontSize: 16}}
+                  onPress={cancelChanges}
+                />
+              </View>
+            )}
+            <DeleteModal
+              isOpen={showDeleteModal}
+              onDelete={deleteClient}
+              onCancel={cancelDeleteClient}
+            />
+          </ScrollView>
+        </RootSiblingParent>
+      </SafeAreaProvider>
+    </KeyboardAvoidingView>
   );
 };
 

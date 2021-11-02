@@ -1,11 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {
-  View,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  KeyboardAvoidingView,
-  Keyboard,
-} from 'react-native';
+import {View, StyleSheet, KeyboardAvoidingView, ScrollView} from 'react-native';
 import {
   getLogRecordById,
   openDBConnection,
@@ -15,7 +9,7 @@ import {
 import {showToast} from '../utils';
 import {RootSiblingParent} from 'react-native-root-siblings';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {Button, Input, Card, Text} from 'react-native-elements';
+import {Button, Input, Text} from 'react-native-elements';
 import IconMaterial from 'react-native-vector-icons/MaterialIcons';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import {Navigation} from 'react-native-navigation';
@@ -135,150 +129,135 @@ const EditActivityRecord = props => {
     }
   }, [isEditMode]);
   return (
-    <SafeAreaProvider>
-      <RootSiblingParent>
-        <KeyboardAvoidingView style={{flex: 1}} behavior={'position'}>
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View>
+    <KeyboardAvoidingView
+      style={{flex: 1}}
+      behavior={'padding'}
+      keyboardVerticalOffset={80}>
+      <SafeAreaProvider>
+        <RootSiblingParent>
+          <ScrollView>
+            <View
+              style={{
+                flexDirection: 'row',
+                marginBottom: 20,
+                marginTop: 20,
+                justifyContent: 'space-between',
+              }}>
+              <View>
+                <Text style={{color: '#9e9e9e', paddingHorizontal: 10}}>
+                  Created at:
+                </Text>
+                <Text style={{color: '#9e9e9e', paddingHorizontal: 10}}>
+                  {date}
+                </Text>
+              </View>
               {!isEditMode && (
-                <View>
-                  <Card>
-                    <View style={styles.row}>
-                      <View style={{flexGrow: 1}}>
-                        <Text>{date}</Text>
-                      </View>
-                      <View>
-                        <Button
-                          icon={
-                            <IconMaterial
-                              name="mode-edit"
-                              size={20}
-                              color="#2196F3"
-                            />
-                          }
-                          type="clear"
-                          onPress={enableEditMode}
-                        />
-                      </View>
-                      <View>
-                        <Button
-                          icon={
-                            <IconMaterial
-                              name="delete-outline"
-                              size={20}
-                              color="#d32f2f"
-                              onPress={onDelete}
-                            />
-                          }
-                          type="clear"
-                        />
-                      </View>
-                    </View>
-                    <Card.Divider />
-                    <View style={{marginTop: 40, marginBottom: 20}}>
-                      <Text style={{color: '#9e9e9e'}}>Title:</Text>
-                      <Text style={{fontSize: 20}}>{title}</Text>
-                    </View>
-                    <View style={styles.margin20}>
-                      <Text style={{color: '#9e9e9e'}}>Count:</Text>
-                      <Text style={{fontSize: 20}}>{count}</Text>
-                    </View>
-                    <View style={styles.margin20}>
-                      <Text style={{color: '#9e9e9e'}}>Weight:</Text>
-                      <Text style={{fontSize: 20}}>{weight}</Text>
-                    </View>
-                    <View style={styles.margin20}>
-                      <Text style={{color: '#9e9e9e'}}>Time:</Text>
-                      <Text style={{fontSize: 20}}>{time}</Text>
-                    </View>
-                  </Card>
-                  <DeleteModal
-                    isOpen={isDeleteModal}
-                    onCancel={onDeleteCancel}
-                    onDelete={deleteRecord}
+                <View style={{flexDirection: 'row'}}>
+                  <Button
+                    icon={
+                      <IconMaterial
+                        name="mode-edit"
+                        size={20}
+                        color="#2196F3"
+                      />
+                    }
+                    type="clear"
+                    onPress={enableEditMode}
+                  />
+                  <Button
+                    icon={
+                      <IconMaterial
+                        name="delete-outline"
+                        size={20}
+                        color="#d32f2f"
+                        onPress={onDelete}
+                      />
+                    }
+                    type="clear"
                   />
                 </View>
               )}
-              {isEditMode && (
-                <View>
-                  <Card>
-                    <View style={styles.row}>
-                      <View style={{paddingBottom: 15}}>
-                        <Text>{date}</Text>
-                      </View>
-                    </View>
-                    <Card.Divider />
-                    <View>
-                      <View style={{marginTop: 10}}>
-                        <Input
-                          value={title}
-                          label="Title"
-                          placeholder="Enter title e.g. Jumping for time"
-                          onChangeText={onTitleChange}
-                        />
-                      </View>
-
-                      <View style={styles.margin20}>
-                        <Input
-                          label="Count"
-                          value={count}
-                          placeholder="Enter number of repeating"
-                          onChangeText={onCountChange}
-                        />
-                      </View>
-
-                      <View style={styles.margin20}>
-                        <Input
-                          value={weight}
-                          label="Weight:"
-                          placeholder="Enter Weight"
-                          onChangeText={onWeightChange}
-                        />
-                      </View>
-
-                      <View style={styles.margin20}>
-                        <Input
-                          value={time}
-                          label="Time"
-                          placeholder="Enter Time"
-                          onChangeText={onTimeChange}
-                        />
-                      </View>
-                    </View>
-                  </Card>
-                  <View
-                    style={{
-                      ...styles.row,
-                      marginBottom: 60,
-                      marginTop: 10,
-                      paddingHorizontal: 15,
-                    }}>
-                    <Button
-                      title="Save"
-                      icon={<EvilIcon name="check" size={30} color="white" />}
-                      buttonStyle={{height: 50}}
-                      onPress={handleSave}
-                      containerStyle={{flex: 1, marginRight: 2.5}}
-                    />
-                    <Button
-                      title="Cancel"
-                      type="outline"
-                      icon={
-                        <EvilIcon name="close-o" size={30} color="#d32f2f" />
-                      }
-                      buttonStyle={{height: 50}}
-                      titleStyle={{color: '#d32f2f'}}
-                      onPress={handleCancel}
-                      containerStyle={{flex: 1, marginLeft: 2.5}}
-                    />
-                  </View>
-                </View>
-              )}
             </View>
-          </TouchableWithoutFeedback>
-        </KeyboardAvoidingView>
-      </RootSiblingParent>
-    </SafeAreaProvider>
+            {!isEditMode && (
+              <View style={{paddingHorizontal: 10}}>
+                <View style={{marginBottom: 20}}>
+                  <Text style={{color: '#9e9e9e'}}>Title:</Text>
+                  <Text style={{fontSize: 20}}>{title}</Text>
+                </View>
+                <View style={styles.margin20}>
+                  <Text style={{color: '#9e9e9e'}}>Count:</Text>
+                  <Text style={{fontSize: 20}}>{count}</Text>
+                </View>
+                <View style={styles.margin20}>
+                  <Text style={{color: '#9e9e9e'}}>Weight:</Text>
+                  <Text style={{fontSize: 20}}>{weight}</Text>
+                </View>
+                <View style={styles.margin20}>
+                  <Text style={{color: '#9e9e9e'}}>Time:</Text>
+                  <Text style={{fontSize: 20}}>{time}</Text>
+                </View>
+              </View>
+            )}
+            {isEditMode && (
+              <View>
+                <Input
+                  value={title}
+                  label="Title:"
+                  placeholder="Enter title e.g. Jumping for time"
+                  onChangeText={onTitleChange}
+                />
+                <Input
+                  label="Count:"
+                  value={count}
+                  placeholder="Enter number of repeating"
+                  onChangeText={onCountChange}
+                />
+                <Input
+                  value={weight}
+                  label="Weight:"
+                  placeholder="Enter Weight"
+                  onChangeText={onWeightChange}
+                />
+                <Input
+                  value={time}
+                  label="Time:"
+                  placeholder="Enter Time"
+                  onChangeText={onTimeChange}
+                />
+                <View
+                  style={{
+                    ...styles.row,
+                    marginTop: 10,
+                    paddingHorizontal: 10,
+                  }}>
+                  <Button
+                    title="Save"
+                    icon={<EvilIcon name="check" size={30} color="white" />}
+                    buttonStyle={{height: 50}}
+                    onPress={handleSave}
+                    containerStyle={{flex: 1, marginRight: 2.5}}
+                  />
+                  <Button
+                    title="Cancel"
+                    type="outline"
+                    icon={<EvilIcon name="close-o" size={30} color="#d32f2f" />}
+                    buttonStyle={{height: 50}}
+                    titleStyle={{color: '#d32f2f'}}
+                    onPress={handleCancel}
+                    containerStyle={{flex: 1, marginLeft: 2.5}}
+                  />
+                </View>
+              </View>
+            )}
+          </ScrollView>
+          <DeleteModal
+            isOpen={isDeleteModal}
+            onCancel={onDeleteCancel}
+            onDelete={deleteRecord}
+          />
+        </RootSiblingParent>
+      </SafeAreaProvider>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -290,6 +269,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   row: {
+    paddingHorizontal: 10,
     flexDirection: 'row',
     alignItems: 'center',
   },
