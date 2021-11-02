@@ -158,7 +158,7 @@ const ActivityRecords = props => {
         </ListItem.Content>
         <IconMaterial
           name="delete-forever"
-          size={20}
+          size={30}
           color="#d32f2f"
           onPress={() => {
             onDelete(item.id);
