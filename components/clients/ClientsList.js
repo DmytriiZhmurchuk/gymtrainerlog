@@ -25,6 +25,7 @@ const ClientsList = props => {
   const [isRefresh, setIsRefresh] = useState(false);
   const [clientId, setClientId] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isFetched, setIsFetched] = useState(false);
 
   const onCancelDelete = () => {
     setClientId(null);
@@ -232,12 +233,8 @@ const ClientsList = props => {
   };
 
   useEffect(() => {
-    const navigationEventListener = Navigation.events().bindComponent({
-      props: {componentId: props.componentId},
-      componentWillAppear() {
-        resetClientList();
-      },
-    });
+    resetClientList();
+    setIsFetched(true);
 
     Navigation.mergeOptions(props.componentId, {
       topBar: {
@@ -245,8 +242,17 @@ const ClientsList = props => {
       },
     });
 
+    const screenEventListener =
+      Navigation.events().registerComponentDidAppearListener(
+        ({componentId, componentName}) => {
+          if (componentName === 'com.gymtrainerlog.HomeScreen' && !isFetched) {
+            resetClientList();
+          }
+        },
+      );
+
     return () => {
-      navigationEventListener.remove();
+      screenEventListener.remove();
     };
   }, [props.componentId]);
 
@@ -285,8 +291,6 @@ const ClientsList = props => {
               data={listState.data}
               renderItem={renderItem}
               keyExtractor={item => item.id}
-              initialNumToRender={10}
-              onEndReachedThreshold={0.1}
               onEndReached={info => {
                 if (info.distanceFromEnd > 0 && !search) {
                   fetchClients();

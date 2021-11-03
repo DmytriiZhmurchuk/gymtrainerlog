@@ -1,7 +1,15 @@
 import {openDatabase} from 'react-native-sqlite-storage';
 
 export const openDBConnection = async () => {
-  return openDatabase({name: 'GymTrainerLog.db', location: 'default'});
+  return new Promise(async (resolve, reject) => {
+    const db = await openDatabase({
+      name: 'GymTrainerLog.db',
+      location: 'default',
+    });
+    const enableForeignKeys = 'PRAGMA foreign_keys = ON;';
+    db.executeSql(enableForeignKeys);
+    resolve(db);
+  });
 };
 
 export const closeDbConnection = async db => {
@@ -9,7 +17,6 @@ export const closeDbConnection = async db => {
 };
 
 export const createTables = async db => {
-  const enableForeignKeys = 'PRAGMA foreign_keys = ON;';
   const query = `CREATE TABLE IF NOT EXISTS Clients(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         firstName TEXT NOT NULL,
@@ -22,7 +29,7 @@ export const createTables = async db => {
         title TEXT NOT NULL,
         clientId INTEGER NOT NULL,
         date DATETIME DEFAULT (datetime(CURRENT_TIMESTAMP, 'localtime')),
-        FOREIGN KEY (clientId) REFERENCES Clients(clientId) ON DELETE CASCADE
+        FOREIGN KEY (clientId) REFERENCES Clients(id) ON DELETE CASCADE
     );`;
 
   const queryActivities = `CREATE TABLE IF NOT EXISTS LogActivities(
@@ -33,12 +40,12 @@ export const createTables = async db => {
       time TEXT,
       logId INTEGER NOT NULL,
       date DATETIME DEFAULT (datetime(CURRENT_TIMESTAMP, 'localtime')),
-      FOREIGN KEY (logId) REFERENCES Logs(logId) ON DELETE CASCADE
+      FOREIGN KEY (logId) REFERENCES Logs(id) ON DELETE CASCADE
   );`;
 
   db.transaction(async tx => {
     // tx.executeSql('DROP TABLE LogActivities');
-    tx.executeSql(enableForeignKeys);
+    // tx.executeSql('DROP TABLE Logs');
     tx.executeSql(queryActivities);
     tx.executeSql(query);
     tx.executeSql(queryLogs);
@@ -101,11 +108,12 @@ export const searchClients = async (search, db) => {
     resolve({data});
   });
 };
-export const searchLogs = async (search, db) => {
+export const searchLogs = async (search, id, db) => {
   return new Promise(async (resolve, reject) => {
-    const query = 'SELECT * FROM Logs  WHERE "title" LIKE "%' + search + '%"';
+    const query =
+      'SELECT * FROM Logs  WHERE id=? AND "title" LIKE "%' + search + '%"';
 
-    const result = await db.executeSql(query);
+    const result = await db.executeSql(query, [id]);
     const rows = result[0].rows;
     const data = [];
     for (let i = 0; i < rows.length; ++i) {

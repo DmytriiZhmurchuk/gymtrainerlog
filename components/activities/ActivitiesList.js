@@ -29,6 +29,7 @@ const ActivitiesList = props => {
   const [logId, setLogId] = useState();
   const [showEditModal, setEditModal] = useState(false);
   const [isRefresh, setIsRefresh] = useState(false);
+  const [isFetched, setFetched] = useState(false);
 
   const [listState, setListState] = useState({
     data: [],
@@ -58,7 +59,7 @@ const ActivitiesList = props => {
   const doSearch = async () => {
     try {
       const db = await openDBConnection();
-      const {data} = await searchLogs(search, db);
+      const {data} = await searchLogs(search, props.clientId, db);
 
       setListState({
         ...listState,
@@ -236,6 +237,7 @@ const ActivitiesList = props => {
       showToast('Saved');
       onRefresh();
     } catch (error) {
+      setShowNewLogModal(false);
       showToast('DB error');
       setLogName('');
     }
@@ -247,15 +249,22 @@ const ActivitiesList = props => {
   };
 
   useEffect(() => {
-    const navigationEventListener = Navigation.events().bindComponent({
-      props: {componentId: props.componentId},
-      componentWillAppear() {
-        fetchLogs();
-      },
-    });
+    onRefresh();
+    setFetched(true);
 
+    const screenEventListener =
+      Navigation.events().registerComponentDidAppearListener(
+        ({componentId, componentName}) => {
+          if (
+            componentName === 'com.gymtrainerlog.ActivitiesList' &&
+            !isFetched
+          ) {
+            onRefresh();
+          }
+        },
+      );
     return () => {
-      navigationEventListener.remove();
+      screenEventListener.remove();
     };
   }, [props.componentId]);
 
@@ -294,8 +303,6 @@ const ActivitiesList = props => {
               data={listState.data}
               renderItem={renderItem}
               keyExtractor={item => item.id}
-              onEndReachedThreshold={0.1}
-              initialNumToRender={9}
               onEndReached={info => {
                 if (!search) {
                   fetchLogs();

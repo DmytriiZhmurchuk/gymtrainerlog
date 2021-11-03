@@ -20,6 +20,7 @@ const ActivityRecords = props => {
   const [isRefresh, setIsRefresh] = useState(false);
   const [isDeleteModal, setDeleteModal] = useState(false);
   const [logRecordID, setLogRecordId] = useState();
+  const [isFetched, setIsFetched] = useState(false);
 
   const onDelete = id => {
     setLogRecordId(id);
@@ -198,15 +199,22 @@ const ActivityRecords = props => {
         ],
       },
     });
-    const navigationEventListener = Navigation.events().bindComponent({
-      props: {componentId: props.componentId},
-      componentWillAppear() {
-        refreshList();
-      },
-    });
+    refreshList();
+    setIsFetched(true);
 
+    const screenEventListener =
+      Navigation.events().registerComponentDidAppearListener(
+        ({componentId, componentName}) => {
+          if (
+            componentName === 'com.gymtrainerlog.activities.ActivityRecords' &&
+            !isFetched
+          ) {
+            refreshList();
+          }
+        },
+      );
     return () => {
-      navigationEventListener.remove();
+      screenEventListener.remove();
     };
   }, [props.componentId]);
 
@@ -220,8 +228,6 @@ const ActivityRecords = props => {
               data={listState.data}
               renderItem={renderItem}
               keyExtractor={item => item.id}
-              onEndReachedThreshold={0.1}
-              initialNumToRender={10}
               onEndReached={fetchLogRecords}
               extraData={listState}
               ListEmptyComponent={renderEmptyList}
