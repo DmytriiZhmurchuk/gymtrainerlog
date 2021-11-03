@@ -8,7 +8,6 @@ import {ListItem, Button} from 'react-native-elements';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import IconMaterial from 'react-native-vector-icons/MaterialIcons';
 import DeleteModal from '../widgets/DeleteModal';
-import Loading from '../widgets/Loading';
 
 import {openDBConnection, getLogRecordsByLogId, deleteLogRecord} from '../db';
 
@@ -21,7 +20,7 @@ const ActivityRecords = props => {
   const [isRefresh, setIsRefresh] = useState(false);
   const [isDeleteModal, setDeleteModal] = useState(false);
   const [logRecordID, setLogRecordId] = useState();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isFetched, setIsFetched] = useState(false);
 
   const onDelete = id => {
     setLogRecordId(id);
@@ -200,15 +199,17 @@ const ActivityRecords = props => {
         ],
       },
     });
-    setIsLoading(true);
+    refreshList();
+    setIsFetched(true);
+
     const screenEventListener =
       Navigation.events().registerComponentDidAppearListener(
         ({componentId, componentName}) => {
           if (
-            componentName === 'com.gymtrainerlog.activities.ActivityRecords'
+            componentName === 'com.gymtrainerlog.activities.ActivityRecords' &&
+            !isFetched
           ) {
             refreshList();
-            setIsLoading(false);
           }
         },
       );
@@ -216,10 +217,6 @@ const ActivityRecords = props => {
       screenEventListener.remove();
     };
   }, [props.componentId]);
-
-  if (isLoading) {
-    return <Loading />;
-  }
 
   return (
     <SafeAreaProvider>
@@ -231,8 +228,6 @@ const ActivityRecords = props => {
               data={listState.data}
               renderItem={renderItem}
               keyExtractor={item => item.id}
-              onEndReachedThreshold={0.1}
-              initialNumToRender={10}
               onEndReached={fetchLogRecords}
               extraData={listState}
               ListEmptyComponent={renderEmptyList}

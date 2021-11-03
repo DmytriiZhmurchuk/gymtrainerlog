@@ -4,18 +4,12 @@ import {Navigation} from 'react-native-navigation';
 import {showToast} from '../utils';
 import {RootSiblingParent} from 'react-native-root-siblings';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {
-  ListItem,
-  SearchBar,
-  Button,
-  LinearProgress,
-} from 'react-native-elements';
+import {ListItem, SearchBar, Button} from 'react-native-elements';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import IconMaterial from 'react-native-vector-icons/MaterialIcons';
 import LogModal from './Modal';
 import DeleteModal from '../widgets/DeleteModal';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
-import Loading from '../widgets/Loading';
 
 import {
   createLog,
@@ -35,7 +29,7 @@ const ActivitiesList = props => {
   const [logId, setLogId] = useState();
   const [showEditModal, setEditModal] = useState(false);
   const [isRefresh, setIsRefresh] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isFetched, setFetched] = useState(false);
 
   const [listState, setListState] = useState({
     data: [],
@@ -65,7 +59,7 @@ const ActivitiesList = props => {
   const doSearch = async () => {
     try {
       const db = await openDBConnection();
-      const {data} = await searchLogs(search, db);
+      const {data} = await searchLogs(search, props.clientId, db);
 
       setListState({
         ...listState,
@@ -243,6 +237,7 @@ const ActivitiesList = props => {
       showToast('Saved');
       onRefresh();
     } catch (error) {
+      setShowNewLogModal(false);
       showToast('DB error');
       setLogName('');
     }
@@ -254,13 +249,17 @@ const ActivitiesList = props => {
   };
 
   useEffect(() => {
-    setIsLoading(true);
+    onRefresh();
+    setFetched(true);
+
     const screenEventListener =
       Navigation.events().registerComponentDidAppearListener(
         ({componentId, componentName}) => {
-          if (componentName === 'com.gymtrainerlog.ActivitiesList') {
+          if (
+            componentName === 'com.gymtrainerlog.ActivitiesList' &&
+            !isFetched
+          ) {
             onRefresh();
-            setIsLoading(false);
           }
         },
       );
@@ -284,10 +283,6 @@ const ActivitiesList = props => {
     return () => clearTimeout(delayDebounceFn);
   }, [search]);
 
-  if (isLoading) {
-    return <Loading />;
-  }
-
   return (
     <SafeAreaProvider>
       <RootSiblingParent>
@@ -308,8 +303,6 @@ const ActivitiesList = props => {
               data={listState.data}
               renderItem={renderItem}
               keyExtractor={item => item.id}
-              onEndReachedThreshold={0.1}
-              initialNumToRender={9}
               onEndReached={info => {
                 if (!search) {
                   fetchLogs();
