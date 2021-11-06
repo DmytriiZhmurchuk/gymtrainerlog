@@ -305,7 +305,7 @@ const ClientsList = props => {
               refreshing={isRefresh}
             />
             <View
-              style={{paddingHorizontal: 10, marginBottom: 50, marginTop: 10}}>
+              style={{paddingHorizontal: 10, marginBottom: 10, marginTop: 10}}>
               <Button
                 title="Add new client"
                 icon={<EvilIcon name="plus" size={30} color="white" />}

@@ -239,7 +239,7 @@ const ActivityRecords = props => {
             />
           </View>
           <View
-            style={{paddingHorizontal: 10, marginBottom: 50, marginTop: 10}}>
+            style={{paddingHorizontal: 10, marginBottom: 10, marginTop: 10}}>
             <Button
               title="New record"
               icon={<EvilIcon name="plus" size={30} color="white" />}

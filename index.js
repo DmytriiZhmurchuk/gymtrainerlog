@@ -23,11 +23,11 @@ patchKeyboardListener();
 ClientsList.options = {
   topBar: {
     title: {
-      text: 'Home',
+      text: 'Clients',
     },
   },
   bottomTab: {
-    text: 'Clients',
+    text: "Client's work log",
   },
 };
 

@@ -56,7 +56,7 @@ const TimeTable = () => {
         startHour={6}
         formatDateHeader="YYYY MMM D, ddd"
         headerStyle={{
-          backgroundColor: '#4286f4',
+          backgroundColor: '#78909C',
           color: '#fff',
           borderColor: '#fff',
         }}
@@ -76,6 +76,11 @@ const TimeTable = () => {
 };
 
 TimeTable.options = {
+  topBar: {
+    title: {
+      text: 'Time table',
+    },
+  },
   bottomTab: {
     text: 'Schedule',
   },
