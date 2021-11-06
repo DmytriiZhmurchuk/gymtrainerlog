@@ -7,6 +7,7 @@ import {
   AddActivityRecord,
   EditActivityRecord,
 } from './components/activities';
+import TimeTable from './components/timetable';
 import {patchKeyboardListener} from './components/utils';
 import {enablePromise} from 'react-native-sqlite-storage';
 
@@ -24,6 +25,9 @@ ClientsList.options = {
     title: {
       text: 'Home',
     },
+  },
+  bottomTab: {
+    text: 'Clients',
   },
 };
 
@@ -46,6 +50,10 @@ Navigation.setDefaultOptions({
     background: {
       color: '#2196F3',
     },
+  },
+  bottomTab: {
+    fontSize: 14,
+    selectedTextColor: '#2196F3',
   },
 });
 
@@ -89,6 +97,8 @@ Navigation.registerComponent(
   () => EditClient,
 );
 
+Navigation.registerComponent('com.gymtrainerlog.TimeTable', () => TimeTable);
+
 Navigation.events().registerAppLaunchedListener(async () => {
   try {
     const db = await openDBConnection();
@@ -97,13 +107,31 @@ Navigation.events().registerAppLaunchedListener(async () => {
   } catch (error) {
     console.log(error);
   }
+
   Navigation.setRoot({
     root: {
-      stack: {
+      bottomTabs: {
         children: [
           {
-            component: {
-              name: 'com.gymtrainerlog.HomeScreen',
+            stack: {
+              children: [
+                {
+                  component: {
+                    name: 'com.gymtrainerlog.TimeTable',
+                  },
+                },
+              ],
+            },
+          },
+          {
+            stack: {
+              children: [
+                {
+                  component: {
+                    name: 'com.gymtrainerlog.HomeScreen',
+                  },
+                },
+              ],
             },
           },
         ],
