@@ -8,6 +8,7 @@ import {
   EditActivityRecord,
 } from './components/activities';
 import TimeTable from './components/timetable';
+import NewEvent from './components/timetable/NewEvent';
 import {patchKeyboardListener} from './components/utils';
 import {enablePromise} from 'react-native-sqlite-storage';
 
@@ -98,6 +99,10 @@ Navigation.registerComponent(
 );
 
 Navigation.registerComponent('com.gymtrainerlog.TimeTable', () => TimeTable);
+Navigation.registerComponent(
+  'com.gymtrainerlog.events.NewEvent',
+  () => NewEvent,
+);
 
 Navigation.events().registerAppLaunchedListener(async () => {
   try {

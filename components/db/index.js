@@ -43,9 +43,46 @@ export const createTables = async db => {
       FOREIGN KEY (logId) REFERENCES Logs(id) ON DELETE CASCADE
   );`;
 
+  //---------Events----------
+
+  const queryEvents = `CREATE TABLE IF NOT EXISTS events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title	TEXT NOT NULL,
+    desc	TEXT NOT NULL,
+    event_date	INTEGER,
+    start_time	INTEGER NOT NULL,
+    end_time	INTEGER NOT NULL,
+    occurance_start_date	INTEGER
+  )`;
+
+  const queryOccurance = `CREATE TABLE IF NOT EXISTS occurance (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    occurance_day	INTEGER NOT NULL
+  )`;
+
+  const queryEvents_occurance = `CREATE TABLE IF NOT EXISTS events_occurance (
+    id	INTEGER NOT NULL,
+    day	INTEGRER NOT NULL,
+    FOREIGN KEY(day) REFERENCES occurance(id),
+    FOREIGN KEY (id) REFERENCES events(id) ON DELETE CASCADE
+  )`;
+
+  const queryCancelledEvents = `CREATE TABLE IF NOT EXISTS cancelled_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    eventId	INTEGER NOT NULL,
+    cancelationDate	INTEGER NOT NULL,
+    FOREIGN KEY(eventId) REFERENCES events(id) ON DELETE CASCADE
+  )`;
+  //-----------End Events------------------
+
   db.transaction(async tx => {
     // tx.executeSql('DROP TABLE LogActivities');
     // tx.executeSql('DROP TABLE Logs');
+    tx.executeSql(queryEvents);
+    tx.executeSql(queryOccurance);
+    tx.executeSql(queryEvents_occurance);
+    tx.executeSql(queryCancelledEvents);
+
     tx.executeSql(queryActivities);
     tx.executeSql(query);
     tx.executeSql(queryLogs);
@@ -226,3 +263,53 @@ export const updateLogRecord = async (logRecord, db) => {
     logRecord.id,
   ]);
 };
+
+//--------- Start events queries --------------
+const createOneDayEvent = (event, db) => {
+  const query =
+    'INSERT INTO events(title,desc,event_date,start_time,end_time) VALUES(?,?,?,?,?);';
+  return db.executeSql(query, [
+    event.title,
+    event.desc,
+    event.eventDate,
+    event.startTime,
+    event.endTime,
+  ]);
+};
+
+const createRegularEvent = (event, db) => {
+  return new Promise(async (resolve, reject) => {
+    const query =
+      'INSERT INTO events(title,desc,occurance_start_date,start_time,end_time) VALUES(?,?,?,?,?);';
+
+    const result = await db.executeSql(query, [
+      event.title,
+      event.desc,
+      event.eventDate,
+      event.startTime,
+      event.endTime,
+    ]);
+    const eventId = result[0].insertId;
+    const occur = event.occurance;
+    const queries = [];
+    for (let i = 0; i < occur.length; i++) {
+      const queryPattern = `INSERT INTO events_occurance(id,day) VALUES('${eventId}','${occur[i]}');`;
+      queries.push(queryPattern);
+    }
+    const inserOccuranceQuery = queries.join(' ');
+    await db.executeSql(inserOccuranceQuery);
+    resolve();
+  });
+};
+
+const selectEventsForWeek = (startWeekDate, endWeekDate, db) => {
+  const query = `SELECT * FROM events 
+   LEFT JOIN events_occurance on events.id = events_occurance.id
+   LEFT JOIN cancelled_events on events.id=cancelled_events.eventId 
+   WHERE event_date >= date(${startWeekDate}) AND event_date <= date(${endWeekDate})
+   OR occurance_start_date IS NOT NULL;`;
+
+  returndb.executeSql(query);
+};
+
+//----------------------------------------------

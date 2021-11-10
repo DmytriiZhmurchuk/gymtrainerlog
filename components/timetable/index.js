@@ -1,6 +1,9 @@
-import React from 'react';
-import {View, Text, Dimensions} from 'react-native';
-// import EventCalendar from 'react-native-events-calendar';
+import React, {useState} from 'react';
+import {View, Text, Dimensions, TouchableOpacity} from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome5';
+import {Button, SpeedDial} from 'react-native-elements';
+import {Navigation} from 'react-native-navigation';
+
 import WeekView from 'react-native-week-view';
 const myEvents = [
   {
@@ -28,9 +31,7 @@ const handleOnEventLongPress = event => {
   alert('remove event');
 };
 
-const handleOnDragEvent = (event, newStartDate, newEndDate) => {
-  alert('handle on drag event');
-};
+const handleOnDragEvent = (event, newStartDate, newEndDate) => {};
 
 const StyledEventComponent = ({event}) => {
   return (
@@ -39,6 +40,30 @@ const StyledEventComponent = ({event}) => {
       <Text>{event.description}</Text>
     </View>
   );
+};
+
+const onModalDismiss = () => {};
+
+const showCreateNewEventModal = () => {
+  Navigation.showModal({
+    stack: {
+      children: [
+        {
+          component: {
+            name: 'com.gymtrainerlog.events.NewEvent',
+            passProps: {onModalDismiss},
+            options: {
+              topBar: {
+                title: {
+                  text: 'Add new event',
+                },
+              },
+            },
+          },
+        },
+      ],
+    },
+  });
 };
 
 const TimeTable = () => {
@@ -71,6 +96,24 @@ const TimeTable = () => {
         hoursInDisplay={10}
         EventComponent={StyledEventComponent}
       />
+
+      <TouchableOpacity
+        onPress={showCreateNewEventModal}
+        style={{
+          borderWidth: 1,
+          borderColor: 'rgba(0,0,0,0.2)',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 50,
+          position: 'absolute',
+          bottom: 10,
+          right: 10,
+          height: 50,
+          backgroundColor: 'rgba(33,150,243,1)',
+          borderRadius: 100,
+        }}>
+        <Icon name="plus" size={15} color="white" />
+      </TouchableOpacity>
     </View>
   );
 };
