@@ -11,19 +11,48 @@ import {
 import {showToast} from '../utils';
 import {RootSiblingParent} from 'react-native-root-siblings';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
-import {Button, Input} from 'react-native-elements';
+import {Button, Input, CheckBox} from 'react-native-elements';
 import {Navigation} from 'react-native-navigation';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 const NewEvent = props => {
   const now = new Date();
+  const nowPlusHour = new Date(new Date().setHours(now.getHours() + 1));
   const [date, setDate] = useState(now);
   const [title, setTitle] = useState('');
   const [desc, setDesc] = useState('');
   const [startTime, setStartTime] = useState(now);
-  const [endTime, setEndTime] = useState(
-    new Date().setHours(now.getHours() + 1),
-  );
+  const [endTime, setEndTime] = useState(nowPlusHour);
+  const [occurrance, setOccurrence] = useState({
+    mon: {
+      id: 1,
+      value: false,
+    },
+    tue: {
+      id: 2,
+      value: false,
+    },
+    wed: {
+      id: 3,
+      value: false,
+    },
+    thu: {
+      id: 4,
+      value: false,
+    },
+    fri: {
+      id: 5,
+      value: false,
+    },
+    sat: {
+      id: 6,
+      value: false,
+    },
+    sun: {
+      id: 7,
+      value: false,
+    },
+  });
 
   const handleSave = () => {
     if (!title) {
@@ -45,7 +74,6 @@ const NewEvent = props => {
   };
 
   const onStartimeChange = (event, selectedTime) => {
-    console.log(selectedTime);
     const start = selectedTime || startTime;
     setStartTime(start);
   };
@@ -55,22 +83,65 @@ const NewEvent = props => {
     setEndTime(end);
   };
 
+  const onMonCheck = () => {
+    setOccurrence({
+      ...occurrance,
+      mon: {...occurrance.mon, value: !occurrance.mon.value},
+    });
+  };
+  const onTueCheck = () => {
+    setOccurrence({
+      ...occurrance,
+      tue: {...occurrance.tue, value: !occurrance.tue.value},
+    });
+  };
+  const onWedCheck = () => {
+    setOccurrence({
+      ...occurrance,
+      wed: {...occurrance.wed, value: !occurrance.wed.value},
+    });
+  };
+  const onThuCheck = () => {
+    setOccurrence({
+      ...occurrance,
+      thu: {...occurrance.thu, value: !occurrance.thu.value},
+    });
+  };
+  const onFriCheck = () => {
+    setOccurrence({
+      ...occurrance,
+      fri: {...occurrance.fri, value: !occurrance.fri.value},
+    });
+  };
+  const onSatCheck = () => {
+    setOccurrence({
+      ...occurrance,
+      sat: {...occurrance.sat, value: !occurrance.sat.value},
+    });
+  };
+  const onSunCheck = () => {
+    setOccurrence({
+      ...occurrance,
+      sun: {...occurrance.sun, value: !occurrance.sun.value},
+    });
+  };
+
   return (
     <KeyboardAvoidingView
       style={{flex: 1, paddingHorizontal: 10, paddingTop: 20}}
       behavior={'padding'}>
       <RootSiblingParent>
         <ScrollView>
-          <Input label="Event title" value={title} onChangeText={setTitle} />
+          <Input label="Event title:" value={title} onChangeText={setTitle} />
           <Input
-            label="Event description"
+            label="Event description:"
             numberOfLines={4}
             value={desc}
             onChangeText={setDesc}
           />
           <Input
-            label="Event date"
-            value={format(date, ' MMMM dd yyyy')}
+            label="Event date:"
+            value={format(new Date(date), ' MMMM dd yyyy')}
             disabled
           />
 
@@ -83,8 +154,8 @@ const NewEvent = props => {
           />
 
           <Input
-            label="Event start time"
-            value={format(startTime, 'HH:mm')}
+            label="Event start time:"
+            value={format(new Date(startTime), 'HH:mm')}
             disabled
           />
 
@@ -96,8 +167,8 @@ const NewEvent = props => {
           />
 
           <Input
-            label="Event end time"
-            value={format(endTime, 'HH:mm')}
+            label="Event end time:"
+            value={format(new Date(endTime), 'HH:mm')}
             disabled
           />
 
@@ -108,6 +179,54 @@ const NewEvent = props => {
             display="compact"
             onChange={onEndTimeChange}
           />
+          <View style={{marginBottom: 30}}>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: '500',
+                paddingVertical: 10,
+                paddingHorizontal: 15,
+              }}>
+              Repeats on:
+            </Text>
+            <View>
+              <CheckBox
+                checked={occurrance.mon.value}
+                title="Every Monday"
+                onIconPress={onMonCheck}
+              />
+              <CheckBox
+                checked={occurrance.tue.value}
+                title="Every Tuesday"
+                onIconPress={onTueCheck}
+              />
+              <CheckBox
+                checked={occurrance.wed.value}
+                title="Every Wednesday"
+                onIconPress={onWedCheck}
+              />
+              <CheckBox
+                checked={occurrance.thu.value}
+                title="Every Thursday"
+                onIconPress={onThuCheck}
+              />
+              <CheckBox
+                checked={occurrance.fri.value}
+                title="Every Friday"
+                onIconPress={onFriCheck}
+              />
+              <CheckBox
+                checked={occurrance.sat.value}
+                title="Every Saturday"
+                onIconPress={onSatCheck}
+              />
+              <CheckBox
+                checked={occurrance.sun.value}
+                title="Every Sunday"
+                onIconPress={onSunCheck}
+              />
+            </View>
+          </View>
 
           <View style={styles.row}>
             <Button

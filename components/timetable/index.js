@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useRef} from 'react';
 import {View, Text, Dimensions, TouchableOpacity} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import {Button, SpeedDial} from 'react-native-elements';
@@ -44,29 +44,33 @@ const StyledEventComponent = ({event}) => {
 
 const onModalDismiss = () => {};
 
-const showCreateNewEventModal = () => {
-  Navigation.showModal({
-    stack: {
-      children: [
-        {
-          component: {
-            name: 'com.gymtrainerlog.events.NewEvent',
-            passProps: {onModalDismiss},
-            options: {
-              topBar: {
-                title: {
-                  text: 'Add new event',
+const TimeTable = () => {
+  const [open, setOpen] = useState(false);
+  const weekViewRef = useRef();
+
+  const showCreateNewEventModal = () => {
+    setOpen(false);
+    Navigation.showModal({
+      stack: {
+        children: [
+          {
+            component: {
+              name: 'com.gymtrainerlog.events.NewEvent',
+              passProps: {onModalDismiss},
+              options: {
+                topBar: {
+                  title: {
+                    text: 'Add new event',
+                  },
                 },
               },
             },
           },
-        },
-      ],
-    },
-  });
-};
+        ],
+      },
+    });
+  };
 
-const TimeTable = () => {
   return (
     <View style={{flex: 1}}>
       <WeekView
@@ -95,25 +99,31 @@ const TimeTable = () => {
         }}
         hoursInDisplay={10}
         EventComponent={StyledEventComponent}
+        ref={ref => {
+          weekViewRef.current = ref;
+        }}
       />
 
-      <TouchableOpacity
-        onPress={showCreateNewEventModal}
-        style={{
-          borderWidth: 1,
-          borderColor: 'rgba(0,0,0,0.2)',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: 50,
-          position: 'absolute',
-          bottom: 10,
-          right: 10,
-          height: 50,
-          backgroundColor: 'rgba(33,150,243,1)',
-          borderRadius: 100,
-        }}>
-        <Icon name="plus" size={15} color="white" />
-      </TouchableOpacity>
+      <SpeedDial
+        buttonStyle={{backgroundColor: 'rgba(33,150,243,1)'}}
+        isOpen={open}
+        icon={{name: 'edit', color: '#fff'}}
+        openIcon={{name: 'close', color: '#fff'}}
+        onOpen={() => setOpen(!open)}
+        onClose={() => setOpen(!open)}>
+        <SpeedDial.Action
+          buttonStyle={{backgroundColor: 'rgba(33,150,243,1)'}}
+          icon={{name: 'add', color: '#fff'}}
+          title="Add new event"
+          onPress={showCreateNewEventModal}
+        />
+        <SpeedDial.Action
+          buttonStyle={{backgroundColor: 'rgba(33,150,243,1)'}}
+          icon={<Icon name="calendar" color="white" size={20} />}
+          title="Go to specific date"
+          onPress={() => console.log('Delete Something')}
+        />
+      </SpeedDial>
     </View>
   );
 };
