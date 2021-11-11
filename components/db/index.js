@@ -52,34 +52,52 @@ export const createTables = async db => {
     event_date	INTEGER,
     start_time	INTEGER NOT NULL,
     end_time	INTEGER NOT NULL,
-    occurance_start_date	INTEGER
+    occurrance_start_date	INTEGER
   )`;
 
-  const queryOccurance = `CREATE TABLE IF NOT EXISTS occurance (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    occurance_day	INTEGER NOT NULL
+  const queryOccurance = `CREATE TABLE IF NOT EXISTS occurrance (
+    occurrance_id INTEGER PRIMARY KEY,
+    occurrance_day	INTEGER NOT NULL UNIQUE
   )`;
 
-  const queryEvents_occurance = `CREATE TABLE IF NOT EXISTS events_occurance (
-    id	INTEGER NOT NULL,
-    day	INTEGRER NOT NULL,
-    FOREIGN KEY(day) REFERENCES occurance(id),
-    FOREIGN KEY (id) REFERENCES events(id) ON DELETE CASCADE
+  const queryFillOccurance = [
+    'INSERT OR IGNORE INTO occurrance(occurrance_id,occurrance_day) VALUES (0,0)',
+    'INSERT OR IGNORE INTO occurrance(occurrance_id,occurrance_day) VALUES (1,1)',
+    'INSERT OR IGNORE INTO occurrance(occurrance_id,occurrance_day) VALUES (2,2)',
+    'INSERT OR IGNORE INTO occurrance(occurrance_id,occurrance_day) VALUES (3,3)',
+    'INSERT OR IGNORE INTO occurrance(occurrance_id,occurrance_day) VALUES (4,4)',
+    'INSERT OR IGNORE INTO occurrance(occurrance_id,occurrance_day) VALUES (5,5)',
+    'INSERT OR IGNORE INTO occurrance(occurrance_id,occurrance_day) VALUES (6,6)',
+    'INSERT OR IGNORE INTO occurrance(occurrance_id,occurrance_day) VALUES (7,7)',
+  ];
+
+  const queryEvents_occurance = `CREATE TABLE IF NOT EXISTS events_occurrance (
+    occur_event_id	INTEGER NOT NULL,
+    occur_day	INTEGRER NOT NULL,
+    FOREIGN KEY(occur_day) REFERENCES occurrance(occurrance_id),
+    FOREIGN KEY (occur_event_id) REFERENCES events(id) ON DELETE CASCADE
   )`;
 
   const queryCancelledEvents = `CREATE TABLE IF NOT EXISTS cancelled_events (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    eventId	INTEGER NOT NULL,
-    cancelationDate	INTEGER NOT NULL,
-    FOREIGN KEY(eventId) REFERENCES events(id) ON DELETE CASCADE
+    cancelled_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    cancelled_eventId	INTEGER NOT NULL,
+    cancellationDate	INTEGER NOT NULL,
+    FOREIGN KEY(cancelled_eventId) REFERENCES events(id) ON DELETE CASCADE
   )`;
   //-----------End Events------------------
 
   db.transaction(async tx => {
-    // tx.executeSql('DROP TABLE LogActivities');
+    // tx.executeSql('DROP TABLE events_occurrance');
+    // tx.executeSql('DROP TABLE cancelled_events');
+    // tx.executeSql('DROP TABLE occurrance');
+    // tx.executeSql('DROP TABLE events');
+
     // tx.executeSql('DROP TABLE Logs');
     tx.executeSql(queryEvents);
     tx.executeSql(queryOccurance);
+    for (let i = 0; i < queryFillOccurance.length; i++) {
+      tx.executeSql(queryFillOccurance[i]);
+    }
     tx.executeSql(queryEvents_occurance);
     tx.executeSql(queryCancelledEvents);
 
@@ -265,51 +283,75 @@ export const updateLogRecord = async (logRecord, db) => {
 };
 
 //--------- Start events queries --------------
-const createOneDayEvent = (event, db) => {
+export const createOneDayEvent = (event, db) => {
   const query =
     'INSERT INTO events(title,desc,event_date,start_time,end_time) VALUES(?,?,?,?,?);';
-  return db.executeSql(query, [
-    event.title,
-    event.desc,
-    event.eventDate,
-    event.startTime,
-    event.endTime,
-  ]);
+  return new Promise(async (resolve, reject) => {
+    const result = await db.executeSql(query, [
+      event.title,
+      event.desc,
+      event.eventDate.getTime(),
+      event.startTime.getTime(),
+      event.endTime.getTime(),
+    ]);
+
+    const eventId = result[0].insertId;
+    const queryPattern = `INSERT INTO events_occurrance(occur_event_id,occur_day) VALUES(${eventId},0);`;
+    await db.executeSql(queryPattern);
+    resolve();
+  });
 };
 
-const createRegularEvent = (event, db) => {
+export const createRegularEvent = (event, db) => {
   return new Promise(async (resolve, reject) => {
     const query =
-      'INSERT INTO events(title,desc,occurance_start_date,start_time,end_time) VALUES(?,?,?,?,?);';
+      'INSERT INTO events(title,desc,occurrance_start_date,start_time,end_time) VALUES(?,?,?,?,?);';
 
     const result = await db.executeSql(query, [
       event.title,
       event.desc,
-      event.eventDate,
-      event.startTime,
-      event.endTime,
+      event.eventDate.getTime(),
+      event.startTime.getTime(),
+      event.endTime.getTime(),
     ]);
     const eventId = result[0].insertId;
     const occur = event.occurance;
     const queries = [];
     for (let i = 0; i < occur.length; i++) {
-      const queryPattern = `INSERT INTO events_occurance(id,day) VALUES('${eventId}','${occur[i]}');`;
+      const queryPattern = `INSERT INTO events_occurrance(occur_event_id,occur_day) VALUES(${eventId},${occur[i]});`;
       queries.push(queryPattern);
     }
-    const inserOccuranceQuery = queries.join(' ');
-    await db.executeSql(inserOccuranceQuery);
-    resolve();
+    db.transaction(
+      async tx => {
+        for (let k = 0; k < queries.length; k++) {
+          tx.executeSql(queries[k]);
+        }
+      },
+      null,
+      () => {
+        resolve();
+      },
+    );
   });
 };
 
-const selectEventsForWeek = (startWeekDate, endWeekDate, db) => {
-  const query = `SELECT * FROM events 
-   LEFT JOIN events_occurance on events.id = events_occurance.id
-   LEFT JOIN cancelled_events on events.id=cancelled_events.eventId 
-   WHERE event_date >= date(${startWeekDate}) AND event_date <= date(${endWeekDate})
-   OR occurance_start_date IS NOT NULL;`;
+export const getEventsForWeek = (startWeekDate, endWeekDate, db) => {
+  const query = `SELECT * FROM events
+    LEFT JOIN events_occurrance on events.id = events_occurrance.occur_event_id
+    LEFT JOIN cancelled_events on events.id=cancelled_events.cancelled_eventId
+    WHERE event_date >= ${startWeekDate.getTime()} AND event_date <= ${endWeekDate.getTime()}
+    OR occurrance_start_date IS NOT NULL`;
 
-  returndb.executeSql(query);
+  return new Promise(async (resolve, reject) => {
+    const results = await db.executeSql(query);
+    const rows = results[0].rows;
+    const data = [];
+
+    for (let i = 0; i < rows.length; ++i) {
+      data.push(rows.item(i));
+    }
+    resolve({data});
+  });
 };
 
 //----------------------------------------------

@@ -14,6 +14,7 @@ import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import {Button, Input, CheckBox} from 'react-native-elements';
 import {Navigation} from 'react-native-navigation';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import {createOneDayEvent, createRegularEvent, openDBConnection} from '../db';
 
 const NewEvent = props => {
   const now = new Date();
@@ -54,7 +55,7 @@ const NewEvent = props => {
     },
   });
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title) {
       showToast('Title cannot be empty');
       return;
@@ -62,6 +63,44 @@ const NewEvent = props => {
     if (!desc) {
       showToast('Description cannot be empty');
       return;
+    }
+    try {
+      const propertyNames = Object.keys(occurrance);
+      const repeatsOn = [];
+      for (let i = 0; i < propertyNames.length; i++) {
+        if (occurrance[propertyNames[i]].value) {
+          repeatsOn.push(occurrance[propertyNames[i]].id);
+        }
+      }
+      const db = await openDBConnection();
+      if (repeatsOn.length) {
+        await createRegularEvent(
+          {
+            title,
+            desc,
+            eventDate: date,
+            startTime,
+            endTime,
+            occurance: repeatsOn,
+          },
+          db,
+        );
+      } else {
+        await createOneDayEvent(
+          {
+            title,
+            desc,
+            eventDate: date,
+            startTime,
+            endTime,
+          },
+          db,
+        );
+      }
+      props.onModalDismiss();
+      handleCancel();
+    } catch (error) {
+      showToast('Cannot save due to Db error');
     }
   };
   const handleCancel = () => {

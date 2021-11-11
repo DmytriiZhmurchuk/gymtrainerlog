@@ -1,37 +1,12 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {View, Text, Dimensions, TouchableOpacity} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import {Button, SpeedDial} from 'react-native-elements';
 import {Navigation} from 'react-native-navigation';
-
 import WeekView from 'react-native-week-view';
-const myEvents = [
-  {
-    id: 1,
-    title: 'Event title',
-    description:
-      'Dmytrii Zhmurchuk Zhmurchuk  Zhmurchuk Zhmurchuk Zhmurchuk Zhmurchuk',
-    startDate: new Date(2021, 10, 6, 12, 0),
-    endDate: new Date(2021, 10, 6, 13, 0),
-    color: 'blue',
-    // ... more properties if needed,
-  },
-  // More events...
-];
-
-const handleOnGridLongPress = (pressEvent, startHour, date) => {
-  alert('add new Event');
-};
-
-const handelOnEventPress = event => {
-  alert('edit event , might be in seperate screen');
-};
-
-const handleOnEventLongPress = event => {
-  alert('remove event');
-};
-
-const handleOnDragEvent = (event, newStartDate, newEndDate) => {};
+import {openDBConnection, getEventsForWeek} from '../db';
+import {showToast} from '../utils';
+import {startOfWeek, endOfWeek} from 'date-fns';
 
 const StyledEventComponent = ({event}) => {
   return (
@@ -42,11 +17,26 @@ const StyledEventComponent = ({event}) => {
   );
 };
 
-const onModalDismiss = () => {};
-
-const TimeTable = () => {
+const TimeTable = props => {
   const [open, setOpen] = useState(false);
+  const [events, setEvents] = useState([]);
   const weekViewRef = useRef();
+
+  const handleOnGridLongPress = (pressEvent, startHour, date) => {
+    alert('add new Event');
+  };
+
+  const handelOnEventPress = event => {
+    alert('edit event , might be in seperate screen');
+  };
+
+  const handleOnEventLongPress = event => {
+    alert('remove event');
+  };
+
+  const handleOnDragEvent = (event, newStartDate, newEndDate) => {};
+
+  const onModalDismiss = () => {};
 
   const showCreateNewEventModal = () => {
     setOpen(false);
@@ -71,6 +61,37 @@ const TimeTable = () => {
     });
   };
 
+  const fetchEventsForCurrentWeek = async () => {
+    const now = new Date();
+    const start = startOfWeek(now, {weekStartsOn: 1});
+    const end = endOfWeek(now, {weekStartsOn: 1});
+    console.log(start);
+    try {
+      const db = await openDBConnection();
+      const data = await getEventsForWeek(start, end, db);
+      console.log(data);
+    } catch (error) {
+      console.log(error);
+      showToast('Failed to fetch events Db error');
+    }
+  };
+
+  useEffect(() => {
+    fetchEventsForCurrentWeek();
+    const screenEventListener =
+      Navigation.events().registerComponentDidAppearListener(
+        ({componentId, componentName}) => {
+          if (componentName === 'com.gymtrainerlog.TimeTable') {
+            //refetch events here
+          }
+        },
+      );
+
+    return () => {
+      screenEventListener.remove();
+    };
+  }, [props.componentId]);
+
   return (
     <View style={{flex: 1}}>
       <WeekView
@@ -78,7 +99,7 @@ const TimeTable = () => {
         onEventPress={handelOnEventPress}
         onEventLongPress={handleOnEventLongPress}
         onDragEvent={handleOnDragEvent}
-        events={myEvents}
+        events={events}
         selectedDate={new Date()}
         numberOfDays={1}
         showTitle={false}
