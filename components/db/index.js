@@ -346,11 +346,85 @@ export const getEventsForWeek = (startWeekDate, endWeekDate, db) => {
     const results = await db.executeSql(query);
     const rows = results[0].rows;
     const data = [];
+    const map = new Map();
 
     for (let i = 0; i < rows.length; ++i) {
       data.push(rows.item(i));
     }
-    resolve({data});
+
+    if (data.length) {
+      for (let index = 0; index < data.length; index++) {
+        const element = data[index];
+        const id = element.id;
+        const startTime = new Date(element.start_time);
+        const endTime = new Date(element.end_time);
+        if (!element.occurrance_start_date) {
+          const eventDate = new Date(element.event_date);
+          map.set(id, {
+            id,
+            title: element.title,
+            description: element.desc,
+            startDate: new Date(
+              eventDate.getFullYear(),
+              eventDate.getMonth(),
+              eventDate.getDate(),
+              startTime.getHours(),
+              startTime.getMinutes(),
+            ),
+            endDate: new Date(
+              eventDate.getFullYear(),
+              eventDate.getMonth(),
+              eventDate.getDate(),
+              endTime.getHours(),
+              endTime.getMinutes(),
+            ),
+            cancellationDates: null,
+          });
+        } else {
+          const eventDate = new Date(element.occurrance_start_date);
+          if (!map.has(id)) {
+            map.set(id, {
+              id,
+              title: element.title,
+              description: element.desc,
+              startDate: new Date(
+                eventDate.getFullYear(),
+                eventDate.getMonth(),
+                eventDate.getDate(),
+                startTime.getHours(),
+                startTime.getMinutes(),
+              ),
+              endDate: new Date(
+                endTime.getFullYear(),
+                endTime.getMonth(),
+                endTime.getDate(),
+                endTime.getHours(),
+                endTime.getMinutes(),
+              ),
+              cancellationDates: element.cancellationDate
+                ? [new Date(element.cancellationDate)]
+                : [],
+              occurDays: [element.occur_day],
+            });
+          } else {
+            const savedItem = map.get(id);
+            const newItem = {
+              ...savedItem,
+              cancellationDates: element.cancellationDate
+                ? savedItem.cancellationDates.concat([
+                    new Date(element.cancellationDate),
+                  ])
+                : savedItem.cancellationDates,
+              occurDays: savedItem.occurDays.concat([element.occur_day]),
+            };
+            map.delete(id);
+            map.set(id, newItem);
+          }
+        }
+      }
+    }
+    const formattedData = Array.from(map, ([name, value]) => ({...value}));
+    resolve(formattedData);
   });
 };
 
