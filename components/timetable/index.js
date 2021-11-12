@@ -1,26 +1,85 @@
 import React, {useState, useRef, useEffect} from 'react';
-import {View, Text, Dimensions, TouchableOpacity} from 'react-native';
+import {View, Text} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
-import {Button, SpeedDial} from 'react-native-elements';
+import {SpeedDial} from 'react-native-elements';
 import {Navigation} from 'react-native-navigation';
 import WeekView from 'react-native-week-view';
 import {openDBConnection, getEventsForWeek} from '../db';
 import {showToast} from '../utils';
-import {startOfWeek, endOfWeek} from 'date-fns';
+import {
+  startOfWeek,
+  endOfWeek,
+  addDays,
+  isAfter,
+  isBefore,
+  isEqual,
+} from 'date-fns';
 
 const StyledEventComponent = ({event}) => {
   return (
-    <View style={{paddingHorizontal: 5, paddingVertical: 15, flex: 1}}>
+    <View
+      style={{
+        paddingHorizontal: 5,
+        paddingVertical: 15,
+        flex: 1,
+        alignSelf: 'flex-start',
+      }}>
       <Text style={{fontSize: 16, fontWeight: '500'}}>{event.title}</Text>
       <Text>{event.description}</Text>
     </View>
   );
 };
 
+const normalizeData = (dateInWeek, data) => {
+  const mondayDate = startOfWeek(dateInWeek, {weekStartsOn: 1});
+  const events = [];
+  for (let k = 0; k < data.length; k++) {
+    const event = data[k];
+    if (event.occurDays) {
+      for (let i = 0; i < event.occurDays.length; i++) {
+        const occurDay = event.occurDays[i];
+        const eventDate = new Date(addDays(mondayDate, occurDay - 1));
+        const eventStartDate = event.startDate;
+        if (
+          isAfter(eventDate, eventStartDate) ||
+          isEqual(eventDate, eventStartDate)
+        ) {
+          const newEvent = {
+            ...event,
+            startDate: new Date(
+              eventDate.getFullYear(),
+              eventDate.getMonth(),
+              eventDate.getDate(),
+              event.startTime.hours,
+              event.startTime.minutes,
+            ),
+            endDate: new Date(
+              eventDate.getFullYear(),
+              eventDate.getMonth(),
+              eventDate.getDate(),
+              event.endTime.hours,
+              event.endTime.minutes,
+            ),
+          };
+          events.push(newEvent);
+        }
+      }
+    } else {
+      events.push(event);
+    }
+  }
+  return events;
+};
+
 const TimeTable = props => {
   const [open, setOpen] = useState(false);
   const [events, setEvents] = useState([]);
+  const [sundayDate, setSundayDate] = useState();
+  const [mondayDate, setMondayDate] = useState();
+  const [currentDate, setCurrentDate] = useState(new Date());
+
   const weekViewRef = useRef();
+  const isFetched = useRef();
 
   const handleOnGridLongPress = (pressEvent, startHour, date) => {
     alert('add new Event');
@@ -36,7 +95,22 @@ const TimeTable = props => {
 
   const handleOnDragEvent = (event, newStartDate, newEndDate) => {};
 
-  const onModalDismiss = () => {};
+  const handleMoveNext = async date => {
+    setCurrentDate(date);
+    if (isAfter(date, sundayDate)) {
+      fetchEventsForCurrentWeek(date);
+    }
+  };
+  const handleMovePrev = async date => {
+    setCurrentDate(date);
+    if (isBefore(date, mondayDate)) {
+      fetchEventsForCurrentWeek(date);
+    }
+  };
+
+  const onModalDismiss = () => {
+    fetchEventsForCurrentWeek(currentDate);
+  };
 
   const showCreateNewEventModal = () => {
     setOpen(false);
@@ -61,28 +135,33 @@ const TimeTable = props => {
     });
   };
 
-  const fetchEventsForCurrentWeek = async () => {
-    const now = new Date();
+  const fetchEventsForCurrentWeek = async date => {
+    const now = date || new Date();
     const start = startOfWeek(now, {weekStartsOn: 1});
     const end = endOfWeek(now, {weekStartsOn: 1});
-    console.log(start);
+    setMondayDate(start);
+    setSundayDate(end);
     try {
       const db = await openDBConnection();
       const data = await getEventsForWeek(start, end, db);
-      console.log(data);
+      setEvents(normalizeData(now, data));
     } catch (error) {
-      console.log(error);
       showToast('Failed to fetch events Db error');
     }
   };
 
   useEffect(() => {
     fetchEventsForCurrentWeek();
+    isFetched.current = true;
     const screenEventListener =
       Navigation.events().registerComponentDidAppearListener(
         ({componentId, componentName}) => {
           if (componentName === 'com.gymtrainerlog.TimeTable') {
-            //refetch events here
+            if (!isFetched.current) {
+              fetchEventsForCurrentWeek();
+            } else {
+              isFetched.current = false;
+            }
           }
         },
       );
@@ -120,6 +199,8 @@ const TimeTable = props => {
         }}
         hoursInDisplay={10}
         EventComponent={StyledEventComponent}
+        onSwipeNext={handleMoveNext}
+        onSwipePrev={handleMovePrev}
         ref={ref => {
           weekViewRef.current = ref;
         }}

@@ -6,7 +6,6 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   StyleSheet,
-  Platform,
 } from 'react-native';
 import {showToast} from '../utils';
 import {RootSiblingParent} from 'react-native-root-siblings';

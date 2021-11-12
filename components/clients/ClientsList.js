@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {View, Text, StyleSheet, FlatList} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {
@@ -25,7 +25,7 @@ const ClientsList = props => {
   const [isRefresh, setIsRefresh] = useState(false);
   const [clientId, setClientId] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [isFetched, setIsFetched] = useState(false);
+  const isFetched = useRef();
 
   const onCancelDelete = () => {
     setClientId(null);
@@ -234,8 +234,7 @@ const ClientsList = props => {
 
   useEffect(() => {
     resetClientList();
-    setIsFetched(true);
-
+    isFetched.current = true;
     Navigation.mergeOptions(props.componentId, {
       topBar: {
         rightButtons: [],
@@ -245,8 +244,12 @@ const ClientsList = props => {
     const screenEventListener =
       Navigation.events().registerComponentDidAppearListener(
         ({componentId, componentName}) => {
-          if (componentName === 'com.gymtrainerlog.HomeScreen' && !isFetched) {
-            resetClientList();
+          if (componentName === 'com.gymtrainerlog.HomeScreen') {
+            if (!isFetched.current) {
+              resetClientList();
+            } else {
+              isFetched.current = false;
+            }
           }
         },
       );

@@ -1,5 +1,5 @@
-import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet, FlatList, Modal} from 'react-native';
+import React, {useState, useEffect, useRef} from 'react';
+import {View, Text, StyleSheet, FlatList} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {showToast} from '../utils';
 import {RootSiblingParent} from 'react-native-root-siblings';
@@ -20,7 +20,7 @@ const ActivityRecords = props => {
   const [isRefresh, setIsRefresh] = useState(false);
   const [isDeleteModal, setDeleteModal] = useState(false);
   const [logRecordID, setLogRecordId] = useState();
-  const [isFetched, setIsFetched] = useState(false);
+  const isFetched = useRef();
 
   const onDelete = id => {
     setLogRecordId(id);
@@ -200,16 +200,19 @@ const ActivityRecords = props => {
       },
     });
     refreshList();
-    setIsFetched(true);
+    isFetched.current = true;
 
     const screenEventListener =
       Navigation.events().registerComponentDidAppearListener(
         ({componentId, componentName}) => {
           if (
-            componentName === 'com.gymtrainerlog.activities.ActivityRecords' &&
-            !isFetched
+            componentName === 'com.gymtrainerlog.activities.ActivityRecords'
           ) {
-            refreshList();
+            if (!isFetched.current) {
+              refreshList();
+            } else {
+              isFetched.current = false;
+            }
           }
         },
       );

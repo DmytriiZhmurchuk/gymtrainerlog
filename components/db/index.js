@@ -1,3 +1,4 @@
+import {getDate, getMonth} from 'date-fns';
 import {openDatabase} from 'react-native-sqlite-storage';
 
 export const openDBConnection = async () => {
@@ -391,16 +392,16 @@ export const getEventsForWeek = (startWeekDate, endWeekDate, db) => {
                 eventDate.getFullYear(),
                 eventDate.getMonth(),
                 eventDate.getDate(),
-                startTime.getHours(),
-                startTime.getMinutes(),
               ),
-              endDate: new Date(
-                endTime.getFullYear(),
-                endTime.getMonth(),
-                endTime.getDate(),
-                endTime.getHours(),
-                endTime.getMinutes(),
-              ),
+              endDate: null,
+              startTime: {
+                hours: startTime.getHours(),
+                minutes: startTime.getMinutes(),
+              },
+              endTime: {
+                hours: endTime.getHours(),
+                minutes: endTime.getMinutes(),
+              },
               cancellationDates: element.cancellationDate
                 ? [new Date(element.cancellationDate)]
                 : [],
