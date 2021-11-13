@@ -7,6 +7,7 @@ import WeekView from 'react-native-week-view';
 import {openDBConnection, getEventsForWeek} from '../db';
 import {showToast} from '../utils';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import ContextMenu from 'react-native-context-menu-view';
 
 import {
   startOfWeek,
@@ -19,21 +20,6 @@ import {
   getMonth,
   getDate,
 } from 'date-fns';
-
-const StyledEventComponent = ({event}) => {
-  return (
-    <View
-      style={{
-        paddingHorizontal: 5,
-        paddingVertical: 15,
-        flex: 1,
-        alignSelf: 'flex-start',
-      }}>
-      <Text style={{fontSize: 16, fontWeight: '500'}}>{event.title}</Text>
-      <Text>{event.description}</Text>
-    </View>
-  );
-};
 
 const normalizeData = (dateInWeek, data) => {
   const mondayDate = startOfWeek(dateInWeek, {weekStartsOn: 1});
@@ -108,7 +94,7 @@ const TimeTable = props => {
   };
 
   const handleOnEventLongPress = event => {
-    alert('remove event');
+    //do nothing required just to prevent bubling and show ctx menu
   };
 
   const handleOnDragEvent = (event, newStartDate, newEndDate) => {};
@@ -130,7 +116,14 @@ const TimeTable = props => {
     fetchEventsForCurrentWeek(currentDate);
   };
 
-  const showCreateNewEventModal = (startTime, endTime, eventDate) => {
+  const showCreateNewEventModal = (
+    startTime,
+    endTime,
+    eventDate,
+    title,
+    description,
+    isEdit,
+  ) => {
     setOpen(false);
     Navigation.showModal({
       stack: {
@@ -138,7 +131,10 @@ const TimeTable = props => {
           {
             component: {
               name: 'com.gymtrainerlog.events.NewEvent',
-              passProps: {onModalDismiss, ...{startTime, endTime, eventDate}},
+              passProps: {
+                onModalDismiss,
+                ...{startTime, endTime, eventDate, title, description, isEdit},
+              },
               options: {
                 topBar: {
                   title: {
@@ -189,13 +185,63 @@ const TimeTable = props => {
     };
   }, [props.componentId]);
 
+  const StyledEventComponent = ({event}) => {
+    let menuActions = [
+      {title: 'Edit'},
+      {title: 'Remove', destructive: true, systemIcon: 'trash'},
+    ];
+    if (event.occurDays) {
+      menuActions = [
+        {title: 'Edit'},
+        {title: 'Cancel', destructive: true, systemIcon: 'trash.slash'},
+        {title: 'Remove', destructive: true, systemIcon: 'trash'},
+      ];
+    }
+    return (
+      <ContextMenu
+        previewBackgroundColor="#E1F5FE"
+        style={{
+          alignSelf: 'flex-start',
+          flexGrow: 1,
+          width: '100%',
+        }}
+        actions={menuActions}
+        onPress={e => {
+          const actionName = e.nativeEvent.name;
+          console.warn(
+            `Pressed ${e.nativeEvent.name} at index ${e.nativeEvent.index}`,
+          );
+          if (actionName === 'edit') {
+            showCreateNewEventModal(
+              event.startTime,
+              event.endTime,
+              event.eventDate,
+              event.title,
+              event.description,
+              true,
+            );
+          }
+        }}>
+        <View
+          style={{
+            paddingHorizontal: 5,
+            paddingVertical: 15,
+            flex: 1,
+          }}>
+          <Text style={{fontWeight: '500'}}>{event.title.trim()}</Text>
+          <Text>{event.description.trim()}</Text>
+        </View>
+      </ContextMenu>
+    );
+  };
+
   return (
     <View style={{flex: 1}}>
       <WeekView
         onGridLongPress={handleOnGridLongPress}
-        onEventPress={handelOnEventPress}
+        // onEventPress={handelOnEventPress}
         onEventLongPress={handleOnEventLongPress}
-        onDragEvent={handleOnDragEvent}
+        //onDragEvent={handleOnDragEvent}
         events={events}
         selectedDate={new Date()}
         numberOfDays={1}
@@ -216,6 +262,9 @@ const TimeTable = props => {
           color: '#000',
           borderTopWidth: 1,
           borderTopColor: 'rgba(33,150,243,1)', //'#00E676',
+          //flexDirection: 'row',
+          //flex: 1,
+          // width: '100%',
         }}
         hoursInDisplay={10}
         EventComponent={StyledEventComponent}

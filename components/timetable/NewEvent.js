@@ -19,8 +19,8 @@ const NewEvent = props => {
   const now = new Date();
   const nowPlusHour = new Date(new Date().setHours(now.getHours() + 1));
   const [date, setDate] = useState(props.eventDate || now);
-  const [title, setTitle] = useState('');
-  const [desc, setDesc] = useState('');
+  const [title, setTitle] = useState(props.title || '');
+  const [desc, setDesc] = useState(props.description || '');
   const [startTime, setStartTime] = useState(props.startTime || now);
   const [endTime, setEndTime] = useState(props.endTime || nowPlusHour);
   const [occurrance, setOccurrence] = useState({
@@ -72,29 +72,31 @@ const NewEvent = props => {
         }
       }
       const db = await openDBConnection();
-      if (repeatsOn.length) {
-        await createRegularEvent(
-          {
-            title,
-            desc,
-            eventDate: date,
-            startTime,
-            endTime,
-            occurance: repeatsOn,
-          },
-          db,
-        );
-      } else {
-        await createOneDayEvent(
-          {
-            title,
-            desc,
-            eventDate: date,
-            startTime,
-            endTime,
-          },
-          db,
-        );
+      if (!props.isEdit) {
+        if (repeatsOn.length) {
+          await createRegularEvent(
+            {
+              title,
+              desc,
+              eventDate: date,
+              startTime,
+              endTime,
+              occurance: repeatsOn,
+            },
+            db,
+          );
+        } else {
+          await createOneDayEvent(
+            {
+              title,
+              desc,
+              eventDate: date,
+              startTime,
+              endTime,
+            },
+            db,
+          );
+        }
       }
       props.onModalDismiss();
       handleCancel();
