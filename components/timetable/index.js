@@ -6,6 +6,8 @@ import {Navigation} from 'react-native-navigation';
 import WeekView from 'react-native-week-view';
 import {openDBConnection, getEventsForWeek} from '../db';
 import {showToast} from '../utils';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+
 import {
   startOfWeek,
   endOfWeek,
@@ -13,6 +15,9 @@ import {
   isAfter,
   isBefore,
   isEqual,
+  addHours,
+  getMonth,
+  getDate,
 } from 'date-fns';
 
 const StyledEventComponent = ({event}) => {
@@ -82,7 +87,20 @@ const TimeTable = props => {
   const isFetched = useRef();
 
   const handleOnGridLongPress = (pressEvent, startHour, date) => {
-    alert('add new Event');
+    ReactNativeHapticFeedback.trigger('impactHeavy', {
+      enableVibrateFallback: true,
+      ignoreAndroidSystemSettings: false,
+    });
+    const startTime = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      startHour,
+      0,
+    );
+    const endTime = addHours(startTime, 1);
+
+    showCreateNewEventModal(startTime, endTime, date);
   };
 
   const handelOnEventPress = event => {
@@ -112,7 +130,7 @@ const TimeTable = props => {
     fetchEventsForCurrentWeek(currentDate);
   };
 
-  const showCreateNewEventModal = () => {
+  const showCreateNewEventModal = (startTime, endTime, eventDate) => {
     setOpen(false);
     Navigation.showModal({
       stack: {
@@ -120,7 +138,7 @@ const TimeTable = props => {
           {
             component: {
               name: 'com.gymtrainerlog.events.NewEvent',
-              passProps: {onModalDismiss},
+              passProps: {onModalDismiss, ...{startTime, endTime, eventDate}},
               options: {
                 topBar: {
                   title: {
@@ -196,6 +214,8 @@ const TimeTable = props => {
         eventContainerStyle={{
           backgroundColor: '#E1F5FE',
           color: '#000',
+          borderTopWidth: 1,
+          borderTopColor: 'rgba(33,150,243,1)', //'#00E676',
         }}
         hoursInDisplay={10}
         EventComponent={StyledEventComponent}

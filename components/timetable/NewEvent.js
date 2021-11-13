@@ -18,11 +18,11 @@ import {createOneDayEvent, createRegularEvent, openDBConnection} from '../db';
 const NewEvent = props => {
   const now = new Date();
   const nowPlusHour = new Date(new Date().setHours(now.getHours() + 1));
-  const [date, setDate] = useState(now);
+  const [date, setDate] = useState(props.eventDate || now);
   const [title, setTitle] = useState('');
   const [desc, setDesc] = useState('');
-  const [startTime, setStartTime] = useState(now);
-  const [endTime, setEndTime] = useState(nowPlusHour);
+  const [startTime, setStartTime] = useState(props.startTime || now);
+  const [endTime, setEndTime] = useState(props.endTime || nowPlusHour);
   const [occurrance, setOccurrence] = useState({
     mon: {
       id: 1,
@@ -182,15 +182,15 @@ const NewEvent = props => {
             value={format(new Date(date), ' MMMM dd yyyy')}
             disabled
           />
-
-          <DateTimePicker
-            value={date}
-            minimumDate={date}
-            mode="date"
-            display="compact"
-            onChange={onChange}
-          />
-
+          {!props.eventDate && (
+            <DateTimePicker
+              value={date}
+              minimumDate={date}
+              mode="date"
+              display="compact"
+              onChange={onChange}
+            />
+          )}
           <Input
             label="Event start time:"
             value={format(new Date(startTime), 'HH:mm')}
@@ -203,7 +203,6 @@ const NewEvent = props => {
             display="compact"
             onChange={onStartimeChange}
           />
-
           <Input
             label="Event end time:"
             value={format(new Date(endTime), 'HH:mm')}
@@ -265,7 +264,6 @@ const NewEvent = props => {
               />
             </View>
           </View>
-
           <View style={styles.row}>
             <Button
               title="Save"
