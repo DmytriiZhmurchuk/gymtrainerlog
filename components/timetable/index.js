@@ -119,9 +119,8 @@ const TimeTable = props => {
     fetchEventsForCurrentWeek(currentDate);
   };
   const onDateSelected = date => {
-    debugger;
     setCurrentDate(date);
-    weekViewRef.current.goToDate(date);
+    weekViewRef.current.goToDate(date, false);
     fetchEventsForCurrentWeek(date);
   };
 
