@@ -322,7 +322,7 @@ const TimeTable = props => {
           buttonStyle={{backgroundColor: 'rgba(33,150,243,1)'}}
           icon={{name: 'add', color: '#fff'}}
           title="Add new event"
-          onPress={showCreateNewEventModal}
+          onPress={() => showCreateNewEventModal()}
         />
         <SpeedDial.Action
           buttonStyle={{backgroundColor: 'rgba(33,150,243,1)'}}
