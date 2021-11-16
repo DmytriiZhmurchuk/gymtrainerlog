@@ -23,7 +23,7 @@ const NewEvent = props => {
   const [desc, setDesc] = useState(props.description || '');
   const [startTime, setStartTime] = useState(props.startTime || now);
   const [endTime, setEndTime] = useState(props.endTime || nowPlusHour);
-  debugger;
+
   const [occurrance, setOccurrence] = useState({
     mon: {
       id: 1,
