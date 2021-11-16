@@ -118,6 +118,12 @@ const TimeTable = props => {
   const onModalDismiss = () => {
     fetchEventsForCurrentWeek(currentDate);
   };
+  const onDateSelected = date => {
+    debugger;
+    setCurrentDate(date);
+    weekViewRef.current.goToDate(date);
+    fetchEventsForCurrentWeek(date);
+  };
 
   const showCreateNewEventModal = (
     startTime,
@@ -142,6 +148,31 @@ const TimeTable = props => {
                 topBar: {
                   title: {
                     text: 'Add new event',
+                  },
+                },
+              },
+            },
+          },
+        ],
+      },
+    });
+  };
+
+  goToDate = () => {
+    setOpen(false);
+    Navigation.showModal({
+      stack: {
+        children: [
+          {
+            component: {
+              name: 'com.gymtrainerlog.events.GoToDate',
+              passProps: {
+                onDateSelected,
+              },
+              options: {
+                topBar: {
+                  title: {
+                    text: 'Select date to view events',
                   },
                 },
               },
@@ -310,7 +341,6 @@ const TimeTable = props => {
           weekViewRef.current = ref;
         }}
       />
-
       <SpeedDial
         buttonStyle={{backgroundColor: 'rgba(33,150,243,1)'}}
         isOpen={open}
@@ -328,7 +358,7 @@ const TimeTable = props => {
           buttonStyle={{backgroundColor: 'rgba(33,150,243,1)'}}
           icon={<Icon name="calendar" color="white" size={20} />}
           title="Go to specific date"
-          onPress={() => console.log('Delete Something')}
+          onPress={() => goToDate()}
         />
       </SpeedDial>
     </View>
