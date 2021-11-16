@@ -4,7 +4,12 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import {SpeedDial} from 'react-native-elements';
 import {Navigation} from 'react-native-navigation';
 import WeekView from 'react-native-week-view';
-import {openDBConnection, getEventsForWeek} from '../db';
+import {
+  openDBConnection,
+  getEventsForWeek,
+  cancelEvent,
+  removeEvent,
+} from '../db';
 import {showToast} from '../utils';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import ContextMenu from 'react-native-context-menu-view';
@@ -17,8 +22,6 @@ import {
   isBefore,
   isEqual,
   addHours,
-  getMonth,
-  getDate,
 } from 'date-fns';
 
 const normalizeData = (dateInWeek, data) => {
@@ -94,7 +97,7 @@ const TimeTable = props => {
   };
 
   const handleOnEventLongPress = event => {
-    //do nothing required just to prevent bubling and show ctx menu
+    //do nothing required just to prevent bubbling and show ctx menu
   };
 
   const handleOnDragEvent = (event, newStartDate, newEndDate) => {};
@@ -158,7 +161,25 @@ const TimeTable = props => {
     try {
       const db = await openDBConnection();
       const data = await getEventsForWeek(start, end, db);
-      setEvents(normalizeData(now, data));
+      const normalizedEvents = normalizeData(now, data);
+      const filteredEvents = normalizedEvents.filter(evt => {
+        const cancelDates = evt?.cancellationDates || [];
+        const isFound = cancelDates.find(d => {
+          const evtDate = new Date(
+            evt.startDate.getFullYear(),
+            evt.startDate.getMonth(),
+            evt.startDate.getDate(),
+          );
+          const cancelDate = new Date(
+            d.getFullYear(),
+            d.getMonth(),
+            d.getDate(),
+          );
+          return isEqual(cancelDate, evtDate);
+        });
+        return !isFound;
+      });
+      setEvents(filteredEvents);
     } catch (error) {
       showToast('Failed to fetch events Db error');
     }
@@ -206,20 +227,38 @@ const TimeTable = props => {
           width: '100%',
         }}
         actions={menuActions}
-        onPress={e => {
+        onPress={async e => {
           const actionName = e.nativeEvent.name;
           console.warn(
             `Pressed ${e.nativeEvent.name} at index ${e.nativeEvent.index}`,
           );
-          if (actionName === 'edit') {
-            showCreateNewEventModal(
-              event.startTime,
-              event.endTime,
-              event.eventDate,
-              event.title,
-              event.description,
-              true,
-            );
+          if (actionName === 'Edit') {
+            // showCreateNewEventModal(
+            //   event.startTime,
+            //   event.endTime,
+            //   event.eventDate,
+            //   event.title,
+            //   event.description,
+            //   true,
+            // );
+          }
+          if (actionName === 'Cancel') {
+            try {
+              const db = await openDBConnection();
+              await cancelEvent(event.id, currentDate, db);
+              fetchEventsForCurrentWeek(currentDate);
+            } catch (error) {
+              showToast('cancellation failed, db error');
+            }
+          }
+          if (actionName === 'Remove') {
+            try {
+              const db = await openDBConnection();
+              await removeEvent(event.id, db);
+              fetchEventsForCurrentWeek(currentDate);
+            } catch (error) {
+              showToast('remove failed, db error');
+            }
           }
         }}>
         <View
@@ -261,10 +300,7 @@ const TimeTable = props => {
           backgroundColor: '#E1F5FE',
           color: '#000',
           borderTopWidth: 1,
-          borderTopColor: 'rgba(33,150,243,1)', //'#00E676',
-          //flexDirection: 'row',
-          //flex: 1,
-          // width: '100%',
+          borderTopColor: 'rgba(33,150,243,1)',
         }}
         hoursInDisplay={10}
         EventComponent={StyledEventComponent}

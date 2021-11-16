@@ -336,10 +336,21 @@ export const createRegularEvent = (event, db) => {
   });
 };
 
+export const cancelEvent = (eventId, date, db) => {
+  const query =
+    'INSERT INTO cancelled_events(cancelled_eventId,cancellationDate) VALUES(?,?)';
+  return db.executeSql(query, [eventId, date.getTime()]);
+};
+
+export const removeEvent = (eventId, db) => {
+  const query = 'DELETE from events WHERE id=?';
+  return db.executeSql(query, [eventId]);
+};
+
 export const getEventsForWeek = (startWeekDate, endWeekDate, db) => {
   const query = `SELECT * FROM events
     LEFT JOIN events_occurrance on events.id = events_occurrance.occur_event_id
-    LEFT JOIN cancelled_events on events.id=cancelled_events.cancelled_eventId
+    LEFT JOIN cancelled_events on events.id = cancelled_events.cancelled_eventId
     WHERE event_date >= ${startWeekDate.getTime()} AND event_date <= ${endWeekDate.getTime()}
     OR occurrance_start_date IS NOT NULL`;
 
@@ -352,13 +363,13 @@ export const getEventsForWeek = (startWeekDate, endWeekDate, db) => {
     for (let i = 0; i < rows.length; ++i) {
       data.push(rows.item(i));
     }
-
     if (data.length) {
       for (let index = 0; index < data.length; index++) {
         const element = data[index];
         const id = element.id;
         const startTime = new Date(element.start_time);
         const endTime = new Date(element.end_time);
+
         if (!element.occurrance_start_date) {
           const eventDate = new Date(element.event_date);
           map.set(id, {
@@ -383,6 +394,9 @@ export const getEventsForWeek = (startWeekDate, endWeekDate, db) => {
           });
         } else {
           const eventDate = new Date(element.occurrance_start_date);
+          const cancelDate = element.cancellationDate
+            ? new Date(element.cancellationDate)
+            : null;
           if (!map.has(id)) {
             map.set(id, {
               id,
@@ -402,8 +416,14 @@ export const getEventsForWeek = (startWeekDate, endWeekDate, db) => {
                 hours: endTime.getHours(),
                 minutes: endTime.getMinutes(),
               },
-              cancellationDates: element.cancellationDate
-                ? [new Date(element.cancellationDate)]
+              cancellationDates: cancelDate
+                ? [
+                    new Date(
+                      cancelDate.getFullYear(),
+                      cancelDate.getMonth(),
+                      cancelDate.getDate(),
+                    ),
+                  ]
                 : [],
               occurDays: [element.occur_day],
             });
@@ -411,12 +431,23 @@ export const getEventsForWeek = (startWeekDate, endWeekDate, db) => {
             const savedItem = map.get(id);
             const newItem = {
               ...savedItem,
-              cancellationDates: element.cancellationDate
-                ? savedItem.cancellationDates.concat([
-                    new Date(element.cancellationDate),
-                  ])
-                : savedItem.cancellationDates,
-              occurDays: savedItem.occurDays.concat([element.occur_day]),
+              cancellationDates:
+                cancelDate &&
+                !savedItem?.cancellationDates?.find(
+                  d => d.getTime() === cancelDate.getTime(),
+                )
+                  ? savedItem.cancellationDates.concat([
+                      new Date(
+                        cancelDate.getFullYear(),
+                        cancelDate.getMonth(),
+                        cancelDate.getDate(),
+                      ),
+                    ])
+                  : savedItem.cancellationDates,
+              occurDays:
+                savedItem.occurDays.indexOf(element.occur_day) == -1
+                  ? savedItem.occurDays.concat([element.occur_day])
+                  : savedItem.occurDays,
             };
             map.delete(id);
             map.set(id, newItem);
