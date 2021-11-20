@@ -40,6 +40,7 @@ const normalizeData = (dateInWeek, data) => {
         ) {
           const newEvent = {
             ...event,
+            startFrom: event.startDate,
             startDate: new Date(
               eventDate.getFullYear(),
               eventDate.getMonth(),
@@ -119,6 +120,7 @@ const TimeTable = props => {
   };
 
   const showCreateNewEventModal = ({
+    startFrom,
     startTime,
     endTime,
     eventDate,
@@ -127,7 +129,7 @@ const TimeTable = props => {
     eventId,
     occurDays,
     cancellationDates,
-  }) => {
+  } = {}) => {
     setOpen(false);
     Navigation.showModal({
       stack: {
@@ -138,6 +140,7 @@ const TimeTable = props => {
               passProps: {
                 onModalDismiss,
                 ...{
+                  startFrom,
                   startTime,
                   endTime,
                   eventDate,
@@ -264,12 +267,12 @@ const TimeTable = props => {
         actions={menuActions}
         onPress={async e => {
           const actionName = e.nativeEvent.name;
-
           if (actionName === 'Edit') {
             showCreateNewEventModal({
+              startFrom: event.startFrom,
               startTime: event.startDate,
               endTime: event.endDate,
-              eventDate: event.eventDate,
+              eventDate: event.startDate,
               title: event.title,
               description: event.description,
               eventId: event.id,
