@@ -75,6 +75,7 @@ const TimeTable = props => {
 
   const weekViewRef = useRef();
   const isFetched = useRef();
+  const currenDateRef = useRef();
 
   const handleOnGridLongPress = (pressEvent, startHour, date) => {
     ReactNativeHapticFeedback.trigger('impactHeavy', {
@@ -99,12 +100,14 @@ const TimeTable = props => {
 
   const handleMoveNext = async date => {
     setCurrentDate(date);
+    currenDateRef.current = date;
     if (isAfter(date, sundayDate)) {
       fetchEventsForCurrentWeek(date);
     }
   };
   const handleMovePrev = async date => {
     setCurrentDate(date);
+    currenDateRef.current = date;
     if (isBefore(date, mondayDate)) {
       fetchEventsForCurrentWeek(date);
     }
@@ -231,7 +234,7 @@ const TimeTable = props => {
         ({componentId, componentName}) => {
           if (componentName === 'com.gymtrainerlog.TimeTable') {
             if (!isFetched.current) {
-              fetchEventsForCurrentWeek(currentDate);
+              fetchEventsForCurrentWeek(currenDateRef.current);
             } else {
               isFetched.current = false;
             }
