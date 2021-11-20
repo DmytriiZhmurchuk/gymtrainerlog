@@ -24,10 +24,12 @@ const NewEvent = props => {
   const now = new Date();
   const eventId = props.eventId;
   const occurDays = props.occurDays;
+  const startFrom = props.startFrom;
   const cancellationDates = props.cancellationDates;
   const nowPlusHour = new Date(new Date().setHours(now.getHours() + 1));
-
-  const [date, setDate] = useState(props.eventDate || now);
+  const [date, setDate] = useState(
+    startFrom ? startFrom : props.eventDate || now,
+  );
   const [title, setTitle] = useState(props.title || '');
   const [desc, setDesc] = useState(props.description || '');
   const [startTime, setStartTime] = useState(props.startTime || now);
@@ -198,19 +200,17 @@ const NewEvent = props => {
             onChangeText={setDesc}
           />
           <Input
-            label="Event date:"
+            label={startFrom ? 'Start from:' : 'Event date:'}
             value={format(new Date(date), ' MMMM dd yyyy')}
             disabled
           />
-          {!props.eventDate && (
-            <DateTimePicker
-              value={date}
-              minimumDate={date}
-              mode="date"
-              display="compact"
-              onChange={onChange}
-            />
-          )}
+          <DateTimePicker
+            value={date}
+            minimumDate={now}
+            mode="date"
+            display="compact"
+            onChange={onChange}
+          />
           <Input
             label="Event start time:"
             value={format(new Date(startTime), 'HH:mm')}
