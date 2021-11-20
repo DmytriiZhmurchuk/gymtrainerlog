@@ -231,7 +231,7 @@ const TimeTable = props => {
         ({componentId, componentName}) => {
           if (componentName === 'com.gymtrainerlog.TimeTable') {
             if (!isFetched.current) {
-              fetchEventsForCurrentWeek();
+              fetchEventsForCurrentWeek(currentDate);
             } else {
               isFetched.current = false;
             }
