@@ -1,5 +1,5 @@
 import React, {useState, useRef, useEffect} from 'react';
-import {View, Text} from 'react-native';
+import {View, Text, ScrollView} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import {SpeedDial} from 'react-native-elements';
 import {Navigation} from 'react-native-navigation';
@@ -89,18 +89,12 @@ const TimeTable = props => {
     );
     const endTime = addHours(startTime, 1);
 
-    showCreateNewEventModal(startTime, endTime, date);
-  };
-
-  const handelOnEventPress = event => {
-    alert('edit event , might be in seperate screen');
+    showCreateNewEventModal({startTime, endTime, eventDate: date});
   };
 
   const handleOnEventLongPress = event => {
     //do nothing required just to prevent bubbling and show ctx menu
   };
-
-  const handleOnDragEvent = (event, newStartDate, newEndDate) => {};
 
   const handleMoveNext = async date => {
     setCurrentDate(date);
@@ -124,14 +118,16 @@ const TimeTable = props => {
     fetchEventsForCurrentWeek(date);
   };
 
-  const showCreateNewEventModal = (
+  const showCreateNewEventModal = ({
     startTime,
     endTime,
     eventDate,
     title,
     description,
-    isEdit,
-  ) => {
+    eventId,
+    occurDays,
+    cancellationDates,
+  }) => {
     setOpen(false);
     Navigation.showModal({
       stack: {
@@ -141,7 +137,16 @@ const TimeTable = props => {
               name: 'com.gymtrainerlog.events.NewEvent',
               passProps: {
                 onModalDismiss,
-                ...{startTime, endTime, eventDate, title, description, isEdit},
+                ...{
+                  startTime,
+                  endTime,
+                  eventDate,
+                  title,
+                  description,
+                  eventId,
+                  cancellationDates,
+                  occurDays,
+                },
               },
               options: {
                 topBar: {
@@ -259,18 +264,18 @@ const TimeTable = props => {
         actions={menuActions}
         onPress={async e => {
           const actionName = e.nativeEvent.name;
-          console.warn(
-            `Pressed ${e.nativeEvent.name} at index ${e.nativeEvent.index}`,
-          );
+
           if (actionName === 'Edit') {
-            // showCreateNewEventModal(
-            //   event.startTime,
-            //   event.endTime,
-            //   event.eventDate,
-            //   event.title,
-            //   event.description,
-            //   true,
-            // );
+            showCreateNewEventModal({
+              startTime: event.startDate,
+              endTime: event.endDate,
+              eventDate: event.eventDate,
+              title: event.title,
+              description: event.description,
+              eventId: event.id,
+              occurDays: event.occurDays,
+              cancellationDates: event.cancellationDates,
+            });
           }
           if (actionName === 'Cancel') {
             try {
@@ -291,15 +296,15 @@ const TimeTable = props => {
             }
           }
         }}>
-        <View
+        <ScrollView
           style={{
             paddingHorizontal: 5,
             paddingVertical: 15,
             flex: 1,
           }}>
           <Text style={{fontWeight: '500'}}>{event.title.trim()}</Text>
-          <Text>{event.description.trim()}</Text>
-        </View>
+          <Text>{event.description}</Text>
+        </ScrollView>
       </ContextMenu>
     );
   };
@@ -308,9 +313,7 @@ const TimeTable = props => {
     <View style={{flex: 1}}>
       <WeekView
         onGridLongPress={handleOnGridLongPress}
-        // onEventPress={handelOnEventPress}
         onEventLongPress={handleOnEventLongPress}
-        //onDragEvent={handleOnDragEvent}
         events={events}
         selectedDate={new Date()}
         numberOfDays={1}

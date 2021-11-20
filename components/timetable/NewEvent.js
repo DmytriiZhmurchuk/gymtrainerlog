@@ -13,11 +13,20 @@ import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import {Button, Input, CheckBox} from 'react-native-elements';
 import {Navigation} from 'react-native-navigation';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import {createOneDayEvent, createRegularEvent, openDBConnection} from '../db';
+import {
+  createOneDayEvent,
+  createRegularEvent,
+  removeEvent,
+  openDBConnection,
+} from '../db';
 
 const NewEvent = props => {
   const now = new Date();
+  const eventId = props.eventId;
+  const occurDays = props.occurDays;
+  const cancellationDates = props.cancellationDates;
   const nowPlusHour = new Date(new Date().setHours(now.getHours() + 1));
+
   const [date, setDate] = useState(props.eventDate || now);
   const [title, setTitle] = useState(props.title || '');
   const [desc, setDesc] = useState(props.description || '');
@@ -27,31 +36,31 @@ const NewEvent = props => {
   const [occurrance, setOccurrence] = useState({
     mon: {
       id: 1,
-      value: false,
+      value: occurDays ? occurDays.indexOf(1) !== -1 : false,
     },
     tue: {
       id: 2,
-      value: false,
+      value: occurDays ? occurDays.indexOf(2) !== -1 : false,
     },
     wed: {
       id: 3,
-      value: false,
+      value: occurDays ? occurDays.indexOf(3) !== -1 : false,
     },
     thu: {
       id: 4,
-      value: false,
+      value: occurDays ? occurDays.indexOf(4) !== -1 : false,
     },
     fri: {
       id: 5,
-      value: false,
+      value: occurDays ? occurDays.indexOf(5) !== -1 : false,
     },
     sat: {
       id: 6,
-      value: false,
+      value: occurDays ? occurDays.indexOf(6) !== -1 : false,
     },
     sun: {
       id: 7,
-      value: false,
+      value: occurDays ? occurDays.indexOf(7) !== -1 : false,
     },
   });
 
@@ -73,31 +82,33 @@ const NewEvent = props => {
         }
       }
       const db = await openDBConnection();
-      if (!props.isEdit) {
-        if (repeatsOn.length) {
-          await createRegularEvent(
-            {
-              title,
-              desc,
-              eventDate: date,
-              startTime,
-              endTime,
-              occurance: repeatsOn,
-            },
-            db,
-          );
-        } else {
-          await createOneDayEvent(
-            {
-              title,
-              desc,
-              eventDate: date,
-              startTime,
-              endTime,
-            },
-            db,
-          );
-        }
+      if (eventId) {
+        await removeEvent(eventId, db);
+      }
+      if (repeatsOn.length) {
+        await createRegularEvent(
+          {
+            title,
+            desc,
+            eventDate: date,
+            startTime,
+            endTime,
+            occurance: repeatsOn,
+            cancellationDates,
+          },
+          db,
+        );
+      } else {
+        await createOneDayEvent(
+          {
+            title,
+            desc,
+            eventDate: date,
+            startTime,
+            endTime,
+          },
+          db,
+        );
       }
       props.onModalDismiss();
       handleCancel();
@@ -173,10 +184,16 @@ const NewEvent = props => {
       behavior={'padding'}>
       <RootSiblingParent>
         <ScrollView>
-          <Input label="Event title:" value={title} onChangeText={setTitle} />
+          <Input
+            label="Event title:"
+            value={title}
+            onChangeText={setTitle}
+            maxLength={40}
+          />
           <Input
             label="Event description:"
-            numberOfLines={4}
+            multiline
+            maxLength={80}
             value={desc}
             onChangeText={setDesc}
           />

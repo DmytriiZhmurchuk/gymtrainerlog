@@ -327,6 +327,16 @@ export const createRegularEvent = (event, db) => {
         for (let k = 0; k < queries.length; k++) {
           tx.executeSql(queries[k]);
         }
+        if (event.cancellationDates) {
+          const cancelQuery =
+            'INSERT INTO cancelled_events(cancelled_eventId,cancellationDate) VALUES(?,?)';
+          for (let j = 0; j < event.cancellationDates.length; j++) {
+            tx.executeSql(cancelQuery, [
+              eventId,
+              event.cancellationDates[j].getTime(),
+            ]);
+          }
+        }
       },
       null,
       () => {
