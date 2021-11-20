@@ -1,3 +1,4 @@
+import {getDate, getMonth} from 'date-fns';
 import {openDatabase} from 'react-native-sqlite-storage';
 
 export const openDBConnection = async () => {
@@ -43,9 +44,64 @@ export const createTables = async db => {
       FOREIGN KEY (logId) REFERENCES Logs(id) ON DELETE CASCADE
   );`;
 
+  //---------Events----------
+
+  const queryEvents = `CREATE TABLE IF NOT EXISTS events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title	TEXT NOT NULL,
+    desc	TEXT NOT NULL,
+    event_date	INTEGER,
+    start_time	INTEGER NOT NULL,
+    end_time	INTEGER NOT NULL,
+    occurrance_start_date	INTEGER
+  )`;
+
+  const queryOccurance = `CREATE TABLE IF NOT EXISTS occurrance (
+    occurrance_id INTEGER PRIMARY KEY,
+    occurrance_day	INTEGER NOT NULL UNIQUE
+  )`;
+
+  const queryFillOccurance = [
+    'INSERT OR IGNORE INTO occurrance(occurrance_id,occurrance_day) VALUES (0,0)',
+    'INSERT OR IGNORE INTO occurrance(occurrance_id,occurrance_day) VALUES (1,1)',
+    'INSERT OR IGNORE INTO occurrance(occurrance_id,occurrance_day) VALUES (2,2)',
+    'INSERT OR IGNORE INTO occurrance(occurrance_id,occurrance_day) VALUES (3,3)',
+    'INSERT OR IGNORE INTO occurrance(occurrance_id,occurrance_day) VALUES (4,4)',
+    'INSERT OR IGNORE INTO occurrance(occurrance_id,occurrance_day) VALUES (5,5)',
+    'INSERT OR IGNORE INTO occurrance(occurrance_id,occurrance_day) VALUES (6,6)',
+    'INSERT OR IGNORE INTO occurrance(occurrance_id,occurrance_day) VALUES (7,7)',
+  ];
+
+  const queryEvents_occurance = `CREATE TABLE IF NOT EXISTS events_occurrance (
+    occur_event_id	INTEGER NOT NULL,
+    occur_day	INTEGRER NOT NULL,
+    FOREIGN KEY(occur_day) REFERENCES occurrance(occurrance_id),
+    FOREIGN KEY (occur_event_id) REFERENCES events(id) ON DELETE CASCADE
+  )`;
+
+  const queryCancelledEvents = `CREATE TABLE IF NOT EXISTS cancelled_events (
+    cancelled_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    cancelled_eventId	INTEGER NOT NULL,
+    cancellationDate	INTEGER NOT NULL,
+    FOREIGN KEY(cancelled_eventId) REFERENCES events(id) ON DELETE CASCADE
+  )`;
+  //-----------End Events------------------
+
   db.transaction(async tx => {
-    // tx.executeSql('DROP TABLE LogActivities');
+    // tx.executeSql('DROP TABLE events_occurrance');
+    // tx.executeSql('DROP TABLE cancelled_events');
+    // tx.executeSql('DROP TABLE occurrance');
+    // tx.executeSql('DROP TABLE events');
+
     // tx.executeSql('DROP TABLE Logs');
+    tx.executeSql(queryEvents);
+    tx.executeSql(queryOccurance);
+    for (let i = 0; i < queryFillOccurance.length; i++) {
+      tx.executeSql(queryFillOccurance[i]);
+    }
+    tx.executeSql(queryEvents_occurance);
+    tx.executeSql(queryCancelledEvents);
+
     tx.executeSql(queryActivities);
     tx.executeSql(query);
     tx.executeSql(queryLogs);
@@ -226,3 +282,192 @@ export const updateLogRecord = async (logRecord, db) => {
     logRecord.id,
   ]);
 };
+
+//--------- Start events queries --------------
+export const createOneDayEvent = (event, db) => {
+  const query =
+    'INSERT INTO events(title,desc,event_date,start_time,end_time) VALUES(?,?,?,?,?);';
+  return new Promise(async (resolve, reject) => {
+    const result = await db.executeSql(query, [
+      event.title,
+      event.desc,
+      event.eventDate.getTime(),
+      event.startTime.getTime(),
+      event.endTime.getTime(),
+    ]);
+
+    const eventId = result[0].insertId;
+    const queryPattern = `INSERT INTO events_occurrance(occur_event_id,occur_day) VALUES(${eventId},0);`;
+    await db.executeSql(queryPattern);
+    resolve();
+  });
+};
+
+export const createRegularEvent = (event, db) => {
+  return new Promise(async (resolve, reject) => {
+    const query =
+      'INSERT INTO events(title,desc,occurrance_start_date,start_time,end_time) VALUES(?,?,?,?,?);';
+
+    const result = await db.executeSql(query, [
+      event.title,
+      event.desc,
+      event.eventDate.getTime(),
+      event.startTime.getTime(),
+      event.endTime.getTime(),
+    ]);
+    const eventId = result[0].insertId;
+    const occur = event.occurance;
+    const queries = [];
+    for (let i = 0; i < occur.length; i++) {
+      const queryPattern = `INSERT INTO events_occurrance(occur_event_id,occur_day) VALUES(${eventId},${occur[i]});`;
+      queries.push(queryPattern);
+    }
+    db.transaction(
+      async tx => {
+        for (let k = 0; k < queries.length; k++) {
+          tx.executeSql(queries[k]);
+        }
+        if (event.cancellationDates) {
+          const cancelQuery =
+            'INSERT INTO cancelled_events(cancelled_eventId,cancellationDate) VALUES(?,?)';
+          for (let j = 0; j < event.cancellationDates.length; j++) {
+            tx.executeSql(cancelQuery, [
+              eventId,
+              event.cancellationDates[j].getTime(),
+            ]);
+          }
+        }
+      },
+      null,
+      () => {
+        resolve();
+      },
+    );
+  });
+};
+
+export const cancelEvent = (eventId, date, db) => {
+  const query =
+    'INSERT INTO cancelled_events(cancelled_eventId,cancellationDate) VALUES(?,?)';
+  return db.executeSql(query, [eventId, date.getTime()]);
+};
+
+export const removeEvent = (eventId, db) => {
+  const query = 'DELETE from events WHERE id=?';
+  return db.executeSql(query, [eventId]);
+};
+
+export const getEventsForWeek = (startWeekDate, endWeekDate, db) => {
+  const query = `SELECT * FROM events
+    LEFT JOIN events_occurrance on events.id = events_occurrance.occur_event_id
+    LEFT JOIN cancelled_events on events.id = cancelled_events.cancelled_eventId
+    WHERE event_date >= ${startWeekDate.getTime()} AND event_date <= ${endWeekDate.getTime()}
+    OR occurrance_start_date IS NOT NULL`;
+
+  return new Promise(async (resolve, reject) => {
+    const results = await db.executeSql(query);
+    const rows = results[0].rows;
+    const data = [];
+    const map = new Map();
+
+    for (let i = 0; i < rows.length; ++i) {
+      data.push(rows.item(i));
+    }
+    if (data.length) {
+      for (let index = 0; index < data.length; index++) {
+        const element = data[index];
+        const id = element.id;
+        const startTime = new Date(element.start_time);
+        const endTime = new Date(element.end_time);
+
+        if (!element.occurrance_start_date) {
+          const eventDate = new Date(element.event_date);
+          map.set(id, {
+            id,
+            title: element.title,
+            description: element.desc,
+            startDate: new Date(
+              eventDate.getFullYear(),
+              eventDate.getMonth(),
+              eventDate.getDate(),
+              startTime.getHours(),
+              startTime.getMinutes(),
+            ),
+            endDate: new Date(
+              eventDate.getFullYear(),
+              eventDate.getMonth(),
+              eventDate.getDate(),
+              endTime.getHours(),
+              endTime.getMinutes(),
+            ),
+            cancellationDates: null,
+          });
+        } else {
+          const eventDate = new Date(element.occurrance_start_date);
+          const cancelDate = element.cancellationDate
+            ? new Date(element.cancellationDate)
+            : null;
+          if (!map.has(id)) {
+            map.set(id, {
+              id,
+              title: element.title,
+              description: element.desc,
+              startDate: new Date(
+                eventDate.getFullYear(),
+                eventDate.getMonth(),
+                eventDate.getDate(),
+              ),
+              endDate: null,
+              startTime: {
+                hours: startTime.getHours(),
+                minutes: startTime.getMinutes(),
+              },
+              endTime: {
+                hours: endTime.getHours(),
+                minutes: endTime.getMinutes(),
+              },
+              cancellationDates: cancelDate
+                ? [
+                    new Date(
+                      cancelDate.getFullYear(),
+                      cancelDate.getMonth(),
+                      cancelDate.getDate(),
+                    ),
+                  ]
+                : [],
+              occurDays: [element.occur_day],
+            });
+          } else {
+            const savedItem = map.get(id);
+            const newItem = {
+              ...savedItem,
+              cancellationDates:
+                cancelDate &&
+                !savedItem?.cancellationDates?.find(
+                  d => d.getTime() === cancelDate.getTime(),
+                )
+                  ? savedItem.cancellationDates.concat([
+                      new Date(
+                        cancelDate.getFullYear(),
+                        cancelDate.getMonth(),
+                        cancelDate.getDate(),
+                      ),
+                    ])
+                  : savedItem.cancellationDates,
+              occurDays:
+                savedItem.occurDays.indexOf(element.occur_day) == -1
+                  ? savedItem.occurDays.concat([element.occur_day])
+                  : savedItem.occurDays,
+            };
+            map.delete(id);
+            map.set(id, newItem);
+          }
+        }
+      }
+    }
+    const formattedData = Array.from(map, ([name, value]) => ({...value}));
+    resolve(formattedData);
+  });
+};
+
+//----------------------------------------------

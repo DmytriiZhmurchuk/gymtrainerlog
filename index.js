@@ -7,6 +7,9 @@ import {
   AddActivityRecord,
   EditActivityRecord,
 } from './components/activities';
+import TimeTable from './components/timetable';
+import NewEvent from './components/timetable/NewEvent';
+import GoToDate from './components/timetable/GoToDate';
 import {patchKeyboardListener} from './components/utils';
 import {enablePromise} from 'react-native-sqlite-storage';
 
@@ -22,8 +25,11 @@ patchKeyboardListener();
 ClientsList.options = {
   topBar: {
     title: {
-      text: 'Home',
+      text: 'Clients',
     },
+  },
+  bottomTab: {
+    text: "Client's work log",
   },
 };
 
@@ -46,6 +52,10 @@ Navigation.setDefaultOptions({
     background: {
       color: '#2196F3',
     },
+  },
+  bottomTab: {
+    fontSize: 14,
+    selectedTextColor: '#2196F3',
   },
 });
 
@@ -89,6 +99,16 @@ Navigation.registerComponent(
   () => EditClient,
 );
 
+Navigation.registerComponent('com.gymtrainerlog.TimeTable', () => TimeTable);
+Navigation.registerComponent(
+  'com.gymtrainerlog.events.NewEvent',
+  () => NewEvent,
+);
+Navigation.registerComponent(
+  'com.gymtrainerlog.events.GoToDate',
+  () => GoToDate,
+);
+
 Navigation.events().registerAppLaunchedListener(async () => {
   try {
     const db = await openDBConnection();
@@ -97,13 +117,31 @@ Navigation.events().registerAppLaunchedListener(async () => {
   } catch (error) {
     console.log(error);
   }
+
   Navigation.setRoot({
     root: {
-      stack: {
+      bottomTabs: {
         children: [
           {
-            component: {
-              name: 'com.gymtrainerlog.HomeScreen',
+            stack: {
+              children: [
+                {
+                  component: {
+                    name: 'com.gymtrainerlog.TimeTable',
+                  },
+                },
+              ],
+            },
+          },
+          {
+            stack: {
+              children: [
+                {
+                  component: {
+                    name: 'com.gymtrainerlog.HomeScreen',
+                  },
+                },
+              ],
             },
           },
         ],

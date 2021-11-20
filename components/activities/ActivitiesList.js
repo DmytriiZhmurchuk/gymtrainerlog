@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {View, Text, StyleSheet, FlatList} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {showToast} from '../utils';
@@ -29,7 +29,7 @@ const ActivitiesList = props => {
   const [logId, setLogId] = useState();
   const [showEditModal, setEditModal] = useState(false);
   const [isRefresh, setIsRefresh] = useState(false);
-  const [isFetched, setFetched] = useState(false);
+  const isFetched = useRef(false);
 
   const [listState, setListState] = useState({
     data: [],
@@ -250,16 +250,16 @@ const ActivitiesList = props => {
 
   useEffect(() => {
     onRefresh();
-    setFetched(true);
-
+    isFetched.current = true;
     const screenEventListener =
       Navigation.events().registerComponentDidAppearListener(
         ({componentId, componentName}) => {
-          if (
-            componentName === 'com.gymtrainerlog.ActivitiesList' &&
-            !isFetched
-          ) {
-            onRefresh();
+          if (componentName === 'com.gymtrainerlog.ActivitiesList') {
+            if (!isFetched.current) {
+              onRefresh();
+            } else {
+              isFetched.current = false;
+            }
           }
         },
       );
@@ -318,7 +318,7 @@ const ActivitiesList = props => {
             />
           </View>
           <View
-            style={{paddingHorizontal: 10, marginBottom: 50, marginTop: 10}}>
+            style={{paddingHorizontal: 10, marginBottom: 10, marginTop: 10}}>
             <Button
               title="New log"
               icon={<EvilIcon name="plus" size={30} color="white" />}
